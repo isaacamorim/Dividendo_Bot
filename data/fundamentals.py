@@ -16,6 +16,7 @@ import pandas as pd
 import yfinance as yf
 
 from data.cache import TTL_FUNDAMENTOS_H, cache
+from data.validators import validar_fundamentos
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
@@ -131,6 +132,9 @@ def get_fundamentos(ticker: str, usar_cache: bool = True) -> dict:
     beta = info.get("beta")
     if beta is not None and 0 < float(beta) < 5:
         base["beta"] = round(float(beta), 2)
+
+    # Filtro final único — toda fonte passa pelo mesmo sanity antes do cache.
+    base = validar_fundamentos(base, t_limpo)
 
     if usar_cache:
         cache.set(t_limpo, base, TTL_FUNDAMENTOS_H)
