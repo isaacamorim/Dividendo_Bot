@@ -15,6 +15,8 @@ import logging
 import pandas as pd
 import yfinance as yf
 
+from data.cache import TTL_FUNDAMENTOS_H, cache
+
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 
@@ -33,9 +35,19 @@ def _pct_norm(valor, limite_pct: float):
     return round(v, 1)
 
 
-def get_fundamentos(ticker: str) -> dict:
-    """Coleta e normaliza fundamentos. Nunca levanta exceção."""
+def get_fundamentos(ticker: str, usar_cache: bool = True) -> dict:
+    """Coleta e normaliza fundamentos. Nunca levanta exceção.
+
+    Checa o cache local antes de bater no yfinance; só grava no cache
+    resultados válidos (com preço), pra não persistir falha transitória.
+    """
     t_limpo = ticker.upper().replace(".SA", "")
+
+    if usar_cache:
+        em_cache = cache.get(t_limpo)
+        if em_cache is not None:
+            return em_cache
+
     base = {
         "ticker": t_limpo, "nome": None, "setor": None, "preco": None,
         "dy": None, "roe": None, "pl": None, "lpa": None, "pvp": None,
@@ -119,5 +131,8 @@ def get_fundamentos(ticker: str) -> dict:
     beta = info.get("beta")
     if beta is not None and 0 < float(beta) < 5:
         base["beta"] = round(float(beta), 2)
+
+    if usar_cache:
+        cache.set(t_limpo, base, TTL_FUNDAMENTOS_H)
 
     return base

@@ -4,3 +4,4 @@ carteira.json
 reports/*.html
 .env
 venv/
+.cache/
