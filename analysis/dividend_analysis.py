@@ -12,7 +12,7 @@ renormalizados — ausência não penaliza (README).
 """
 
 from config.settings import (
-    FILTRO_DIVIDA_MAX, FILTRO_DY_MIN, FILTRO_ROE_MIN, PESOS_SCORE,
+    FILTRO_DY_MIN, FILTRO_ROE_MIN, PESOS_SCORE,
     STOP_LOSS_PCT, TAKE_PROFIT_PCT, resolver_perfil,
 )
 from analysis.valuation import calcular_valuation
@@ -144,14 +144,23 @@ def _avaliar_fundamentos(fund: dict, perfil: dict):
         motivos.append(f"possível yield trap (DY {dy:.1f}%)")
     if roe is not None and roe < 5:
         motivos.append(f"ROE muito baixo ({roe:.1f}%)")
-    if divida is not None and divida > 4:
-        motivos.append(f"dívida excessiva ({divida:.1f}x EBITDA)")
+    # Dívida só é SELL quando ultrapassa o teto ESTRUTURAL do setor E há
+    # deterioração real de lucro (queda de dois dígitos, não ruído). Alavancagem
+    # alta mas estável (concessões reguladas) não é risco — no máximo mantém
+    # fora do BUY (fica HOLD). -15% é a linha entre "flutuação" e "encolhimento".
+    EPS_DETERIORACAO = -15
+    teto_divida = perfil.get("divida_max")
+    if (divida is not None and teto_divida is not None and divida > teto_divida
+            and eps is not None and eps < EPS_DETERIORACAO):
+        motivos.append(f"alavancagem {divida:.1f}x acima do teto setorial "
+                       f"({teto_divida:.1f}x) com lucro em queda ({eps:.0f}%)")
     if motivos:
         return "SELL", motivos
 
     # ── Filtros de aprovação por estratégia ──────────────────────────────────
-    divida_ok = divida is None or divida <= FILTRO_DIVIDA_MAX
-    roe_ok    = roe is not None and roe >= FILTRO_ROE_MIN * 100
+    teto_divida = perfil.get("divida_max")
+    divida_ok   = divida is None or teto_divida is None or divida <= teto_divida
+    roe_ok      = roe is not None and roe >= FILTRO_ROE_MIN * 100
 
     if perfil["estrategia"] == "GROWTH":
         eps_ok = eps is None or eps >= 8          # ausente não reprova (README)

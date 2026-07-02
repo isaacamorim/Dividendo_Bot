@@ -70,25 +70,30 @@ TRANSMISSORAS = {"TAEE11", "ISAE4", "TRPL4", "ENGI11"}
 #    graham        : False = método Graham desativado p/ o setor
 # ─────────────────────────────────────────────────────────────────────────────
 
+#    divida_max    : Dívida/EBITDA tolerada como ESTRUTURAL do setor (não é risco).
+#                    Concessões reguladas (transmissão/energia) operam alavancadas
+#                    de propósito — 3–5x EBITDA é normal, não deterioração.
+#                    None = métrica não se aplica (bancos não têm EBITDA).
+
 PERFIS_SETOR = {
     "bancos":      {"label": "Bancos/Fin.",       "pl_min": 7,  "pl_max": 13, "pl_mediano": 9,
-                    "dy_alvo": 0.065, "dy_cap": 0.13, "estrategia": "DIVIDENDO", "graham": False},
+                    "dy_alvo": 0.065, "dy_cap": 0.13, "divida_max": None, "estrategia": "DIVIDENDO", "graham": False},
     "energia":     {"label": "Energia",           "pl_min": 12, "pl_max": 16, "pl_mediano": 14,
-                    "dy_alvo": 0.075, "dy_cap": 0.15, "estrategia": "DIVIDENDO", "graham": True},
+                    "dy_alvo": 0.075, "dy_cap": 0.15, "divida_max": 3.5,  "estrategia": "DIVIDENDO", "graham": True},
     "transmissao": {"label": "Energia",           "pl_min": 28, "pl_max": 38, "pl_mediano": 32,
-                    "dy_alvo": 0.070, "dy_cap": 0.14, "estrategia": "DIVIDENDO", "graham": True},
+                    "dy_alvo": 0.070, "dy_cap": 0.14, "divida_max": 5.5,  "estrategia": "DIVIDENDO", "graham": True},
     "petroleo":    {"label": "Petróleo/Gás",      "pl_min": 4,  "pl_max": 8,  "pl_mediano": 6,
-                    "dy_alvo": 0.085, "dy_cap": 0.18, "estrategia": "DIVIDENDO", "graham": True},
+                    "dy_alvo": 0.085, "dy_cap": 0.18, "divida_max": 2.5,  "estrategia": "DIVIDENDO", "graham": True},
     "commodities": {"label": "Commodities",       "pl_min": 5,  "pl_max": 10, "pl_mediano": 7,
-                    "dy_alvo": 0.055, "dy_cap": 0.14, "estrategia": "DIVIDENDO", "graham": True},
+                    "dy_alvo": 0.055, "dy_cap": 0.14, "divida_max": 2.5,  "estrategia": "DIVIDENDO", "graham": True},
     "telecom":     {"label": "Telecom/Mídia",     "pl_min": 12, "pl_max": 20, "pl_mediano": 15,
-                    "dy_alvo": 0.055, "dy_cap": 0.12, "estrategia": "DIVIDENDO", "graham": True},
+                    "dy_alvo": 0.055, "dy_cap": 0.12, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": True},
     "industrial":  {"label": "Industrial/Growth", "pl_min": 20, "pl_max": 35, "pl_mediano": 27,
-                    "dy_alvo": 0.025, "dy_cap": 0.06, "estrategia": "GROWTH",    "graham": True},
+                    "dy_alvo": 0.025, "dy_cap": 0.06, "divida_max": 2.5,  "estrategia": "GROWTH",    "graham": True},
     "fii":         {"label": "FIIs",              "pl_min": 10, "pl_max": 18, "pl_mediano": 12,
-                    "dy_alvo": 0.090, "dy_cap": 0.16, "estrategia": "DIVIDENDO", "graham": False},
+                    "dy_alvo": 0.090, "dy_cap": 0.16, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": False},
     "default":     {"label": "Geral",             "pl_min": 8,  "pl_max": 18, "pl_mediano": 12,
-                    "dy_alvo": 0.060, "dy_cap": 0.13, "estrategia": "DIVIDENDO", "graham": True},
+                    "dy_alvo": 0.060, "dy_cap": 0.13, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": True},
 }
 
 # Perfil fixo por ticker (mais confiável que o setor do Yahoo p/ a watchlist)
