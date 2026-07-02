@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+carteira.json
+reports/*.html
+.env
+venv/
