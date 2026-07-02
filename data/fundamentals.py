@@ -12,6 +12,7 @@ este módulo normaliza e, na dúvida, devolve None (o score renormaliza).
 
 import logging
 
+import pandas as pd
 import yfinance as yf
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
@@ -43,8 +44,10 @@ def get_fundamentos(ticker: str) -> dict:
     }
 
     try:
-        info = yf.Ticker(ticker).info or {}
+        yf_ticker = yf.Ticker(ticker)
+        info = yf_ticker.info or {}
     except Exception:
+        yf_ticker = None
         info = {}
 
     preco = (info.get("currentPrice") or info.get("regularMarketPrice")
@@ -57,13 +60,32 @@ def get_fundamentos(ticker: str) -> dict:
     base["nome"]  = info.get("shortName") or info.get("longName")
     base["setor"] = info.get("sector")
 
-    # ── DY: rota primária à prova de escala — dividendos/ação ÷ preço ────────
-    div_rate = info.get("trailingAnnualDividendRate") or info.get("dividendRate")
-    if div_rate and preco:
-        dy = round(float(div_rate) / float(preco) * 100, 1)
-        base["dy"] = dy if 0 <= dy <= 40 else None      # >40% = lixo/evento único
+    # ── DY: série real de proventos dos últimos 12 meses ÷ preço ─────────────
+    # Fonte de verdade > campo trailingAnnualDividendRate (que ora subreporta,
+    # ora tem escala inconsistente). Ancorado em HOJE (TTM), não no último
+    # pagamento — calendário irregular ancorado no último provento superconta
+    # (BBAS3: .last daria 4,9% vs 2,7% real por incluir provento de 13 meses).
+    dy_serie = None
+    if yf_ticker is not None and preco:
+        try:
+            divs = yf_ticker.dividends
+            if divs is not None and not divs.empty:
+                corte = pd.Timestamp.now(tz=divs.index.tz) - pd.DateOffset(years=1)
+                soma_12m = float(divs[divs.index >= corte].sum())
+                dy_serie = round(soma_12m / float(preco) * 100, 1)
+        except Exception:
+            dy_serie = None
+
+    if dy_serie is not None and 0 <= dy_serie <= 40:      # >40% = lixo/evento único
+        base["dy"] = dy_serie
     else:
-        base["dy"] = _pct_norm(info.get("dividendYield"), 40)
+        # Fallback: campo do info (série vazia, preço 0, ou fora do sanity)
+        div_rate = info.get("trailingAnnualDividendRate") or info.get("dividendRate")
+        if div_rate and preco:
+            dy = round(float(div_rate) / float(preco) * 100, 1)
+            base["dy"] = dy if 0 <= dy <= 40 else None
+        else:
+            base["dy"] = _pct_norm(info.get("dividendYield"), 40)
 
     # ── Rentabilidade e múltiplos ─────────────────────────────────────────────
     base["roe"] = _pct_norm(info.get("returnOnEquity"), 200)
