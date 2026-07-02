@@ -10,6 +10,8 @@ TTLs padrão: 4h para preços, 24h para fundamentos.
 Arquivo: .cache/fundamentals (ignorado pelo git).
 """
 
+from __future__ import annotations  # compat Python 3.8 (VPS) — annotations lazy
+
 import os
 import shelve
 import threading
