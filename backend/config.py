@@ -15,3 +15,6 @@ JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "isaac")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+
+SCAN_HORA = int(os.getenv("SCAN_HORA", "7"))
+API_PORT = int(os.getenv("API_PORT", "8003"))
