@@ -1,0 +1,113 @@
+"""
+backend/services/backtest_service.py — Backtest com cache no banco.
+
+Reusa rodar_backtest() do core. Cache por (ticker, periodo): se houver run
+com < 24h, devolve o resumo do banco (rápido); senão roda ao vivo, salva o
+resumo (upsert) e devolve o resultado completo (com trades).
+
+A tabela backtest_runs guarda só métricas-resumo (schema do PRD) — trades e
+histórico de capital só vêm no run fresh.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
+from sqlalchemy import func
+from sqlalchemy.dialects.postgresql import insert
+
+from backtest.backtester import rodar_backtest
+from config.settings import WATCHLIST_ACOES
+
+from backend.models.backtest import BacktestRun
+
+_CACHE_HORAS = 24
+
+_METRICAS = ("retorno_pct", "cagr_pct", "sharpe", "max_drawdown",
+             "alpha_pct", "win_rate_pct", "n_trades")
+
+
+def _limpo(ticker: str) -> str:
+    return ticker.upper().replace(".SA", "")
+
+
+def _cache_valido(run: BacktestRun | None) -> bool:
+    if run is None or run.created_at is None:
+        return False
+    return datetime.now(timezone.utc) - run.created_at < timedelta(hours=_CACHE_HORAS)
+
+
+def _num(x):
+    return float(x) if x is not None else None
+
+
+def _run_para_dict(run: BacktestRun) -> dict:
+    return {
+        "ticker": run.ticker, "periodo": run.periodo, "origem": "cache",
+        "retorno_pct": _num(run.retorno_pct), "cagr_pct": _num(run.cagr_pct),
+        "sharpe": _num(run.sharpe), "max_drawdown": _num(run.max_drawdown),
+        "alpha_pct": _num(run.alpha_pct), "win_rate_pct": _num(run.win_rate_pct),
+        "n_trades": run.n_trades, "trades": [],
+        "created_at": run.created_at.isoformat(),
+    }
+
+
+def _salvar(db, ticker: str, periodo: str, res: dict):
+    valores = {"ticker": ticker, "periodo": periodo, "created_at": func.now()}
+    valores.update({m: res.get(m) for m in _METRICAS})
+    stmt = insert(BacktestRun).values(**valores)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["ticker", "periodo"],
+        set_={**{m: getattr(stmt.excluded, m) for m in _METRICAS},
+              "created_at": func.now()},
+    )
+    db.execute(stmt)
+    db.commit()
+
+
+def backtest_ticker(db, ticker: str, periodo: str = "5y") -> dict:
+    tk = _limpo(ticker)
+    run = db.query(BacktestRun).filter_by(ticker=tk, periodo=periodo).first()
+    if _cache_valido(run):
+        return _run_para_dict(run)
+
+    res = rodar_backtest(tk + ".SA", period=periodo)
+    if "erro" in res:
+        return {"ticker": tk, "periodo": periodo, "origem": "fresh", "erro": res["erro"]}
+
+    _salvar(db, tk, periodo, res)
+    saida = dict(res)
+    saida["ticker"] = tk
+    saida["intervalo_datas"] = res.get("periodo")   # o "periodo" do core é intervalo de datas
+    saida["periodo"] = periodo                       # o nosso periodo é o do request
+    saida["origem"] = "fresh"
+    return saida
+
+
+def backtest_comparativo(db, periodo: str = "5y") -> dict:
+    resultados = []
+    for ticker in WATCHLIST_ACOES:
+        r = backtest_ticker(db, ticker, periodo)
+        if "erro" not in r:
+            resultados.append(r)
+
+    if not resultados:
+        return {"periodo": periodo, "resultados": [], "alpha_medio": None, "pct_venceu_bh": None}
+
+    ranking = sorted(resultados, key=lambda x: -(x.get("retorno_pct") or -9999))
+    alphas = [x["alpha_pct"] for x in resultados if x.get("alpha_pct") is not None]
+    alpha_medio = round(sum(alphas) / len(alphas), 2) if alphas else None
+    pct_venceu = round(sum(1 for a in alphas if a > 0) / len(alphas) * 100, 1) if alphas else None
+
+    return {
+        "periodo": periodo,
+        "n_ativos": len(resultados),
+        "alpha_medio": alpha_medio,
+        "pct_venceu_bh": pct_venceu,
+        "ranking": [
+            {"ticker": x["ticker"], "retorno_pct": x.get("retorno_pct"),
+             "cagr_pct": x.get("cagr_pct"), "alpha_pct": x.get("alpha_pct"),
+             "sharpe": x.get("sharpe"), "origem": x.get("origem")}
+            for x in ranking
+        ],
+    }
