@@ -1,0 +1,17 @@
+[Unit]
+Description=Dividend Bot API
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/dividendo-bot
+EnvironmentFile=/opt/dividendo-bot/.env
+ExecStart=/opt/dividendo-bot/venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8003 --workers 1
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

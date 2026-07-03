@@ -24,4 +24,4 @@ def _startup():
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "versao": "1.0"}
