@@ -5,3 +5,4 @@ reports/*.html
 .env
 venv/
 .cache/
+*.log
