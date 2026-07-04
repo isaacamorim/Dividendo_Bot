@@ -74,6 +74,12 @@ export default function Dashboard() {
           >
             📈 Ver histórico
           </Link>
+          <Link
+            href="/dashboard/carteira"
+            className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+          >
+            💼 Minha Carteira
+          </Link>
           <button
             onClick={atualizar}
             disabled={escaneando}
