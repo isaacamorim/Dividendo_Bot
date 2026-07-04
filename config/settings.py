@@ -10,13 +10,37 @@ Reconstruído em jul/2026 a partir do README + gabarito de 10/03/2026
 # ─────────────────────────────────────────────────────────────────────────────
 
 WATCHLIST_ACOES = [
-    "BBAS3.SA", "ITUB4.SA", "BBDC4.SA",              # bancos
-    "TAEE11.SA", "ISAE4.SA",                          # transmissoras
-    "CMIG4.SA", "CPLE3.SA", "EGIE3.SA",               # energia (ger./dist.)
-    "PETR4.SA",                                       # petróleo/gás
-    "VALE3.SA",                                       # commodities
-    "VIVT3.SA",                                       # telecom
-    "WEGE3.SA",                                       # industrial/growth
+    # Bancos
+    "BBAS3.SA",
+    "ITUB4.SA",
+    "BBDC4.SA",
+    # Energia
+    "TAEE11.SA",
+    "ISAE4.SA",
+    "CMIG4.SA",
+    "CPLE3.SA",
+    "EGIE3.SA",
+    # Commodities
+    "PETR4.SA",
+    "VALE3.SA",
+    # Telecom
+    "VIVT3.SA",
+    # Industrial
+    "WEGE3.SA",
+    # Tecnologia
+    "TOTS3.SA",
+    # Saúde
+    "RADL3.SA",
+    "RDOR3.SA",
+    # Consumo
+    "ABEV3.SA",
+    "LREN3.SA",
+    # Seguros
+    "CXSE3.SA",
+    # Papel e Celulose
+    "SUZB3.SA",
+    # Shopping
+    "MULT3.SA",
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -90,6 +114,20 @@ PERFIS_SETOR = {
                     "dy_alvo": 0.055, "dy_cap": 0.12, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": True},
     "industrial":  {"label": "Industrial/Growth", "pl_min": 20, "pl_max": 35, "pl_mediano": 27,
                     "dy_alvo": 0.025, "dy_cap": 0.06, "divida_max": 2.5,  "estrategia": "GROWTH",    "graham": True},
+    "tecnologia":  {"label": "Tecnologia",        "pl_min": 20, "pl_max": 40, "pl_mediano": 28,
+                    "dy_alvo": 0.020, "dy_cap": 0.06, "divida_max": 2.5,  "estrategia": "GROWTH",    "graham": True},
+    "saude":       {"label": "Saúde",             "pl_min": 18, "pl_max": 35, "pl_mediano": 25,
+                    "dy_alvo": 0.020, "dy_cap": 0.07, "divida_max": 3.0,  "estrategia": "GROWTH",    "graham": True},
+    "consumo":     {"label": "Consumo",           "pl_min": 12, "pl_max": 25, "pl_mediano": 18,
+                    "dy_alvo": 0.040, "dy_cap": 0.10, "divida_max": 2.5,  "estrategia": "DIVIDENDO", "graham": True},
+    "seguros":     {"label": "Seguros",           "pl_min": 8,  "pl_max": 14, "pl_mediano": 11,
+                    "dy_alvo": 0.060, "dy_cap": 0.13, "divida_max": None, "estrategia": "DIVIDENDO", "graham": False},
+    "papel":       {"label": "Papel/Celulose",    "pl_min": 8,  "pl_max": 16, "pl_mediano": 11,
+                    "dy_alvo": 0.035, "dy_cap": 0.12, "divida_max": 3.5,  "estrategia": "DIVIDENDO", "graham": True},
+    "shopping":    {"label": "Shopping",          "pl_min": 12, "pl_max": 20, "pl_mediano": 16,
+                    "dy_alvo": 0.050, "dy_cap": 0.12, "divida_max": 3.5,  "estrategia": "DIVIDENDO", "graham": True},
+    "infraestrutura": {"label": "Infraestrutura", "pl_min": 12, "pl_max": 20, "pl_mediano": 16,
+                    "dy_alvo": 0.040, "dy_cap": 0.11, "divida_max": 4.0,  "estrategia": "DIVIDENDO", "graham": True},
     "fii":         {"label": "FIIs",              "pl_min": 10, "pl_max": 18, "pl_mediano": 12,
                     "dy_alvo": 0.090, "dy_cap": 0.16, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": False},
     "default":     {"label": "Geral",             "pl_min": 8,  "pl_max": 18, "pl_mediano": 12,
@@ -98,26 +136,66 @@ PERFIS_SETOR = {
 
 # Perfil fixo por ticker (mais confiável que o setor do Yahoo p/ a watchlist)
 TICKER_PERFIL = {
-    "BBAS3": "bancos", "ITUB4": "bancos", "BBDC4": "bancos", "SANB11": "bancos",
-    "TAEE11": "transmissao", "ISAE4": "transmissao", "TRPL4": "transmissao", "ENGI11": "transmissao",
-    "CMIG4": "energia", "CPLE3": "energia", "CPLE6": "energia", "EGIE3": "energia",
-    "PETR4": "petroleo", "PETR3": "petroleo", "PRIO3": "petroleo",
-    "VALE3": "commodities", "CSNA3": "commodities", "GGBR4": "commodities",
-    "VIVT3": "telecom", "TIMS3": "telecom",
-    "WEGE3": "industrial", "RADL3": "industrial", "TOTS3": "industrial",
+    # Bancos
+    "BBAS3": "bancos",
+    "ITUB4": "bancos",
+    "BBDC4": "bancos",
+    "SANB11": "bancos",
+    # Seguros
+    "CXSE3": "seguros",
+    "PSSA3": "seguros",
+    # Transmissão
+    "TAEE11": "transmissao",
+    "ISAE4": "transmissao",
+    "TRPL4": "transmissao",
+    # Energia
+    "CMIG4": "energia",
+    "CPLE3": "energia",
+    "CPLE6": "energia",
+    "EGIE3": "energia",
+    # Petróleo
+    "PETR3": "petroleo",
+    "PETR4": "petroleo",
+    "PRIO3": "petroleo",
+    # Commodities / Mineração / Siderurgia
+    "VALE3": "commodities",
+    "CSNA3": "commodities",
+    "GGBR4": "commodities",
+    # Papel e Celulose
+    "SUZB3": "papel",
+    "KLBN11": "papel",
+    # Telecom
+    "VIVT3": "telecom",
+    "TIMS3": "telecom",
+    # Tecnologia
+    "TOTS3": "tecnologia",
+    # Industrial
+    "WEGE3": "industrial",
+    # Saúde
+    "RADL3": "saude",
+    "RDOR3": "saude",
+    # Consumo
+    "ABEV3": "consumo",
+    "LREN3": "consumo",
+    # Infraestrutura / Concessões
+    "CCRO3": "infraestrutura",
+    # Shopping Centers
+    "MULT3": "shopping",
 }
 
 # Fallback: setor do Yahoo Finance → perfil (p/ tickers fora do TICKER_PERFIL)
 SETOR_MAP = {
-    "Financial Services":     "bancos",
-    "Utilities":              "energia",
-    "Energy":                 "petroleo",
-    "Basic Materials":        "commodities",
+    "Financial Services": "bancos",
+    "Utilities": "energia",
+    "Energy": "petroleo",
+    "Basic Materials": "commodities",
     "Communication Services": "telecom",
-    "Industrials":            "industrial",
-    "Technology":             "industrial",
-    "Consumer Cyclical":      "industrial",
-    "Real Estate":            "fii",
+    "Technology": "tecnologia",
+    "Healthcare": "saude",
+    "Consumer Defensive": "consumo",
+    "Consumer Cyclical": "consumo",
+    "Industrials": "industrial",
+    "Real Estate": "fii",
 }
 
 
@@ -132,11 +210,14 @@ def resolver_perfil(ticker: str, setor_yf: str = None):
         return "transmissao", PERFIS_SETOR["transmissao"]
     if t in TICKER_PERFIL:
         nome = TICKER_PERFIL[t]
-        return nome, PERFIS_SETOR[nome]
-    if setor_yf and setor_yf in SETOR_MAP:
+    elif setor_yf and setor_yf in SETOR_MAP:
         nome = SETOR_MAP[setor_yf]
-        return nome, PERFIS_SETOR[nome]
-    return "default", PERFIS_SETOR["default"]
+    else:
+        nome = "default"
+    # À prova de futuro: setor mapeado sem perfil cai no default em vez de estourar.
+    if nome not in PERFIS_SETOR:
+        nome = "default"
+    return nome, PERFIS_SETOR[nome]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

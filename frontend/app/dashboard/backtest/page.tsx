@@ -8,8 +8,47 @@ import BacktestChart from "@/components/BacktestChart";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 const WATCHLIST = [
-  "ITUB4", "PETR4", "WEGE3", "BBDC4", "TAEE11", "CMIG4",
-  "VALE3", "CPLE3", "VIVT3", "ISAE4", "EGIE3", "BBAS3",
+  // Bancos
+  "BBAS3",
+  "ITUB4",
+  "BBDC4",
+
+  // Energia
+  "TAEE11",
+  "ISAE4",
+  "CMIG4",
+  "CPLE3",
+  "EGIE3",
+
+  // Commodities
+  "PETR4",
+  "VALE3",
+
+  // Telecom
+  "VIVT3",
+
+  // Industrial
+  "WEGE3",
+
+  // Tecnologia
+  "TOTS3",
+
+  // Saúde
+  "RADL3",
+  "RDOR3",
+
+  // Consumo
+  "ABEV3",
+  "LREN3",
+
+  // Seguros
+  "CXSE3",
+
+  // Papel e Celulose
+  "SUZB3",
+
+  // Shopping
+  "MULT3",
 ];
 const PERIODOS = ["1y", "2y", "5y"];
 
