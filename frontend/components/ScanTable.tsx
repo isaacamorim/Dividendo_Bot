@@ -7,9 +7,11 @@ type Col = keyof AtivoResult;
 type Filtro = "TODOS" | Sinal;
 
 const num = (v: number | null, d = 2) => (v == null ? "—" : v.toFixed(d));
+const truncar = (s: string, n = 14) => (s.length > n ? s.slice(0, n) + "…" : s);
 
-const COLS: { key: Col; label: string }[] = [
+const COLS: { key: Col; label: string; sortable?: boolean }[] = [
   { key: "ticker", label: "Ticker" },
+  { key: "setor_perfil", label: "Setor", sortable: false },
   { key: "preco", label: "Preço" },
   { key: "ma200", label: "MA200" },
   { key: "preco_justo", label: "P.Justo" },
@@ -70,22 +72,30 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
         <table className="w-full text-sm">
           <thead className="bg-zinc-900 text-zinc-400">
             <tr>
-              {COLS.map((c) => (
-                <th
-                  key={c.key}
-                  onClick={() => sort(c.key)}
-                  className="cursor-pointer select-none px-3 py-2 text-left hover:text-zinc-100"
-                >
-                  {c.label}
-                  {sortCol === c.key ? (asc ? " ▲" : " ▼") : ""}
-                </th>
-              ))}
+              {COLS.map((c) => {
+                const podeOrdenar = c.sortable !== false;
+                return (
+                  <th
+                    key={c.key}
+                    onClick={podeOrdenar ? () => sort(c.key) : undefined}
+                    className={`px-3 py-2 text-left ${
+                      podeOrdenar ? "cursor-pointer select-none hover:text-zinc-100" : ""
+                    }`}
+                  >
+                    {c.label}
+                    {podeOrdenar && sortCol === c.key ? (asc ? " ▲" : " ▼") : ""}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
             {dados.map((r) => (
               <tr key={r.ticker} className={`border-t border-zinc-800 ${linhaCor(r.sinal)}`}>
                 <td className="px-3 py-2 font-medium">{r.ticker}</td>
+                <td className="px-3 py-2 text-zinc-400" title={r.setor_perfil}>
+                  {truncar(r.setor_perfil)}
+                </td>
                 <td className="px-3 py-2">R${num(r.preco)}</td>
                 <td
                   className={`px-3 py-2 ${

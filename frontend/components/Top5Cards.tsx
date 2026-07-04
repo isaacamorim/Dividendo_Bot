@@ -12,8 +12,11 @@ export default function Top5Cards({ resultados }: { resultados: AtivoResult[] })
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {top.map((r) => (
         <div key={r.ticker} className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-          <div className="flex items-center justify-between">
-            <span className="font-bold">{r.ticker}</span>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="font-bold">{r.ticker}</div>
+              <div className="text-xs text-zinc-500">{r.setor_perfil}</div>
+            </div>
             <span className={`text-sm font-semibold ${corSinal(r.sinal)}`}>{r.sinal}</span>
           </div>
           <div className="mt-2 text-2xl font-bold">{r.score?.toFixed(1) ?? "—"}</div>
