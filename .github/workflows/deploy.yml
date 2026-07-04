@@ -5,7 +5,23 @@ on:
     branches: [main]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-asyncio httpx
+      - name: Run unit tests
+        run: pytest tests/unit/ -v
+        # Só unit tests no CI (integration precisa do banco, roda no VPS)
+
   deploy:
+    needs: test # só deploya se os testes passarem
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
