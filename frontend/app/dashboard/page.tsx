@@ -72,7 +72,7 @@ export default function Dashboard() {
             disabled={escaneando}
             className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {escaneando ? "Escaneando... (~30s)" : "🔄 Atualizar agora"}
+            {escaneando ? "⏳ Escaneando... (~30s)" : "🔄 Atualizar agora"}
           </button>
           <button
             onClick={logout}
