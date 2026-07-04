@@ -38,9 +38,8 @@ export default function ScoreChart({ serie }: { serie: HistoricoPonto[] }) {
           <Tooltip
             contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8 }}
             labelStyle={{ color: "#a1a1aa" }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={(v: number, _n: string, item: any) => [
-              `${v} (${item.payload.sinal})`,
+            formatter={(value, _name, item) => [
+              `${value} (${(item as { payload: { sinal: string } }).payload.sinal})`,
               "Score",
             ]}
           />

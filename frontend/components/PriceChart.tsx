@@ -41,11 +41,15 @@ export default function PriceChart({ serie }: { serie: HistoricoPonto[] }) {
           <Tooltip
             contentStyle={{ background: "#18181b", border: "1px solid #3f3f46", borderRadius: 8 }}
             labelStyle={{ color: "#a1a1aa" }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={(v: number, name: string, item: any) =>
+            formatter={(value, name, item) =>
               name === "preco"
-                ? [`R$${v} (upside ${item.payload.upside ?? "—"}%)`, "Preço"]
-                : [`R$${v}`, "Preço Justo"]
+                ? [
+                    `R$${value} (upside ${
+                      (item as { payload: { upside: number | null } }).payload.upside ?? "—"
+                    }%)`,
+                    "Preço",
+                  ]
+                : [`R$${value}`, "Preço Justo"]
             }
           />
           <Legend formatter={(v: string) => nomes[v] ?? v} />
