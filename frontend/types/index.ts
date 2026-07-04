@@ -26,6 +26,22 @@ export interface ScanLatest {
   top5: AtivoResult[];
 }
 
+export interface HistoricoPonto {
+  data: string;
+  score: number | null;
+  sinal: Sinal;
+  preco: number | null;
+  preco_justo: number | null;
+  upside: number | null;
+  dy: number | null;
+  roe: number | null;
+}
+
+export interface HistoricoResponse {
+  ticker: string;
+  serie: HistoricoPonto[];
+}
+
 export interface Posicao {
   ticker: string;
   qtd: number;

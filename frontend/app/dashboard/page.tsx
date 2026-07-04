@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ScanLatest } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 import KPICards from "@/components/KPICards";
@@ -67,6 +68,12 @@ export default function Dashboard() {
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold">📊 Dividend Bot B3</h1>
         <div className="flex gap-2">
+          <Link
+            href="/dashboard/historico"
+            className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+          >
+            📈 Ver histórico
+          </Link>
           <button
             onClick={atualizar}
             disabled={escaneando}

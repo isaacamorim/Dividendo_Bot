@@ -77,5 +77,7 @@ def historico(ticker: str, dias: int = Query(30, ge=1, le=3650),
               .filter(Snapshot.ticker == tk, Snapshot.data >= limite)
               .order_by(Snapshot.data).all())
     serie = [{"data": s.data.isoformat(), "score": _f(s.score), "sinal": s.sinal,
-              "preco": _f(s.preco), "upside": _f(s.upside)} for s in rows]
+              "preco": _f(s.preco), "preco_justo": _f(s.preco_justo),
+              "upside": _f(s.upside), "dy": _f(s.dy), "roe": _f(s.roe)}
+             for s in rows]
     return {"ticker": tk, "serie": serie}
