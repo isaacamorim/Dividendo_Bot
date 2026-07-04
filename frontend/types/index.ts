@@ -7,6 +7,7 @@ export interface AtivoResult {
   ticker: string;
   data: string;
   preco: number | null;
+  ma200: number | null;
   preco_justo: number | null;
   upside: number | null;
   dy: number | null;

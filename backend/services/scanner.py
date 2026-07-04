@@ -23,7 +23,7 @@ from backend.models.snapshot import Snapshot
 logger = logging.getLogger("dividend_bot.scanner")
 
 _CAMPOS_UPSERT = (
-    "preco", "preco_justo", "upside", "dy", "roe", "pl",
+    "preco", "ma200", "preco_justo", "upside", "dy", "roe", "pl",
     "score", "sinal", "estrategia", "setor_perfil", "div_estimado",
 )
 
@@ -59,9 +59,11 @@ def rodar_scan(watchlist: list | None = None) -> list:
 def _linha_snapshot(r: dict, dia: date) -> dict:
     f = r.get("fundamentos", {}) or {}
     v = r.get("valuation", {}) or {}
+    t = r.get("tecnico", {}) or {}
     return {
         "ticker": r["ticker"], "data": dia,
-        "preco": f.get("preco"), "preco_justo": v.get("preco_justo"),
+        "preco": f.get("preco"), "ma200": t.get("ma_longa"),
+        "preco_justo": v.get("preco_justo"),
         "upside": v.get("upside"), "dy": f.get("dy"), "roe": f.get("roe"),
         "pl": f.get("pl"), "score": r.get("score"), "sinal": r.get("sinal"),
         "estrategia": r.get("estrategia"), "setor_perfil": r.get("setor_perfil"),

@@ -11,6 +11,7 @@ const num = (v: number | null, d = 2) => (v == null ? "—" : v.toFixed(d));
 const COLS: { key: Col; label: string }[] = [
   { key: "ticker", label: "Ticker" },
   { key: "preco", label: "Preço" },
+  { key: "ma200", label: "MA200" },
   { key: "preco_justo", label: "P.Justo" },
   { key: "upside", label: "Upside" },
   { key: "dy", label: "DY" },
@@ -86,6 +87,17 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
               <tr key={r.ticker} className={`border-t border-zinc-800 ${linhaCor(r.sinal)}`}>
                 <td className="px-3 py-2 font-medium">{r.ticker}</td>
                 <td className="px-3 py-2">R${num(r.preco)}</td>
+                <td
+                  className={`px-3 py-2 ${
+                    r.ma200 == null
+                      ? ""
+                      : (r.preco ?? 0) >= r.ma200
+                        ? "text-emerald-400"
+                        : "text-red-400"
+                  }`}
+                >
+                  {r.ma200 == null ? "—" : `R$${r.ma200.toFixed(2)}`}
+                </td>
                 <td className="px-3 py-2">R${num(r.preco_justo)}</td>
                 <td
                   className={`px-3 py-2 ${

@@ -14,6 +14,7 @@ class Snapshot(Base):
     ticker       = Column(String(10), nullable=False)
     data         = Column(Date, nullable=False)
     preco        = Column(Numeric(10, 2))
+    ma200        = Column(Numeric(10, 2))
     preco_justo  = Column(Numeric(10, 2))
     upside       = Column(Numeric(6, 2))
     dy           = Column(Numeric(6, 2))

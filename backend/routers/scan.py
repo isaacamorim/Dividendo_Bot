@@ -29,7 +29,8 @@ def _f(x):
 def _serialize(s: Snapshot) -> dict:
     return {
         "ticker": s.ticker, "data": s.data.isoformat(),
-        "preco": _f(s.preco), "preco_justo": _f(s.preco_justo), "upside": _f(s.upside),
+        "preco": _f(s.preco), "ma200": _f(s.ma200),
+        "preco_justo": _f(s.preco_justo), "upside": _f(s.upside),
         "dy": _f(s.dy), "roe": _f(s.roe), "pl": _f(s.pl), "score": _f(s.score),
         "sinal": s.sinal, "estrategia": s.estrategia, "setor_perfil": s.setor_perfil,
         "div_estimado": _f(s.div_estimado),
