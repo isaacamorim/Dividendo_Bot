@@ -18,9 +18,9 @@ sleep 3
 systemctl is-active dividendo-bot-api || exit 1
 
 # Frontend
-echo "--- npm install ---"
+echo "--- npm ci (nao altera package-lock -> nao quebra o git pull do proximo deploy) ---"
 cd frontend
-npm install --silent
+npm ci --silent
 
 echo "--- build ---"
 npm run build
