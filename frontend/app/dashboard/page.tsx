@@ -80,6 +80,12 @@ export default function Dashboard() {
           >
             💼 Minha Carteira
           </Link>
+          <Link
+            href="/dashboard/backtest"
+            className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+          >
+            📈 Backtest
+          </Link>
           <button
             onClick={atualizar}
             disabled={escaneando}

@@ -152,6 +152,13 @@ def rodar_backtest(
     capital_bh  = capital_inicial - qtd_bh * preco_ini + qtd_bh * preco_fim
     ret_bh      = (capital_bh / capital_inicial - 1) * 100
 
+    # Série B&H por dia, alinhada ao histórico da estratégia (para o gráfico web).
+    sobra_bh     = capital_inicial - qtd_bh * preco_ini
+    historico_bh = [
+        {"data": h["data"], "capital": round(sobra_bh + qtd_bh * float(close.iloc[MA_LONGA + j]), 2)}
+        for j, h in enumerate(capital_hist)
+    ]
+
     # ── Métricas ────────────────────────────────────────────────────────────
     ret_total    = (capital / capital_inicial - 1) * 100
     n_dias       = (df.index[-1] - df.index[MA_LONGA]).days
@@ -192,6 +199,7 @@ def rodar_backtest(
         "alpha_pct":       alpha,
         "trades":          trades[-20:],   # últimos 20 trades
         "historico":       capital_hist,
+        "historico_bh":    historico_bh,   # série B&H por dia (gráfico web)
     }
 
 

@@ -66,10 +66,26 @@ export interface CarteiraResumo {
   alertas: string[];
 }
 
+export interface CapitalPonto {
+  data: string;
+  capital: number;
+}
+
+export interface Trade {
+  tipo: "COMPRA" | "VENDA";
+  data: string;
+  preco: number;
+  qtd: number;
+  lucro?: number;
+  motivo?: string;
+}
+
 export interface BacktestResult {
   ticker: string;
   periodo: string;
   origem: string;
+  intervalo_datas?: string;
+  anos?: number;
   retorno_pct: number | null;
   cagr_pct: number | null;
   sharpe: number | null;
@@ -77,5 +93,9 @@ export interface BacktestResult {
   alpha_pct: number | null;
   win_rate_pct: number | null;
   n_trades: number | null;
-  trades?: unknown[];
+  bh_retorno_pct?: number | null;
+  trades?: Trade[];
+  historico?: CapitalPonto[];
+  historico_bh?: CapitalPonto[];
+  erro?: string;
 }
