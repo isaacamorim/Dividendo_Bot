@@ -53,6 +53,8 @@ def validar_fundamentos(dados: dict, ticker: str) -> dict:
     except (TypeError, ValueError):
         preco_ok = False
     if not preco_ok:
-        logger.error("%s: preço inválido (%r) — dado inútil", ticker, preco)
+        # Sem preço válido o ativo é inútil — levanta (get_fundamentos já
+        # retorna 'delisted' antes de chegar aqui quando não há preço).
+        raise ValueError(f"{ticker}: preço inválido ({preco!r}) — dado inútil")
 
     return limpo
