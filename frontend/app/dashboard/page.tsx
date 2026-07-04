@@ -66,7 +66,7 @@ export default function Dashboard() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold">📊 Dividend Bot B3</h1>
+        <h1 className="text-xl font-bold">📊 Dividend Bot B3 — B3 Scanner</h1>
         <div className="flex gap-2">
           <Link
             href="/dashboard/historico"
