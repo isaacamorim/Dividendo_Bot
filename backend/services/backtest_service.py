@@ -11,6 +11,7 @@ histórico de capital só vêm no run fresh.
 
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func
@@ -25,6 +26,31 @@ _CACHE_HORAS = 24
 
 _METRICAS = ("retorno_pct", "cagr_pct", "sharpe", "max_drawdown",
              "alpha_pct", "win_rate_pct", "n_trades")
+
+# Teto por coluna Numeric(p, s): |valor| < 10^(p-s). Blindagem para um valor
+# patologico (nan/inf/degenerado) nunca estourar o INSERT e derrubar o
+# endpoint comparativo, que itera toda a watchlist.
+_LIMITES = {
+    "retorno_pct": 1e6, "cagr_pct": 1e6, "max_drawdown": 1e6,
+    "alpha_pct": 1e6, "win_rate_pct": 1e4, "sharpe": 1e3,
+}
+
+
+def _sanear(metrica: str, valor):
+    """Garante que a metrica cabe na coluna: nan/inf -> None; clamp ao teto."""
+    if valor is None or metrica == "n_trades":
+        return valor
+    try:
+        f = float(valor)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(f):
+        return None
+    lim = _LIMITES.get(metrica)
+    if lim is not None:
+        teto = lim - 0.01
+        f = max(-teto, min(teto, f))
+    return f
 
 
 def _limpo(ticker: str) -> str:
@@ -54,7 +80,7 @@ def _run_para_dict(run: BacktestRun) -> dict:
 
 def _salvar(db, ticker: str, periodo: str, res: dict):
     valores = {"ticker": ticker, "periodo": periodo, "created_at": func.now()}
-    valores.update({m: res.get(m) for m in _METRICAS})
+    valores.update({m: _sanear(m, res.get(m)) for m in _METRICAS})
     stmt = insert(BacktestRun).values(**valores)
     stmt = stmt.on_conflict_do_update(
         index_elements=["ticker", "periodo"],

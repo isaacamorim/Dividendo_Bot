@@ -41,8 +41,13 @@ def _sharpe(retornos_diarios: pd.Series, rf_anual: float = 0.11) -> float:
     if len(retornos_diarios) < 30: return 0.0
     rf_diario = rf_anual / 252
     excesso   = retornos_diarios - rf_diario
-    if excesso.std() == 0: return 0.0
-    return round(float(excesso.mean() / excesso.std() * np.sqrt(252)), 2)
+    sd = float(excesso.std())
+    # std quase-zero (série ~constante, ex.: 0 trades) gera ruído de ponto
+    # flutuante ~1e-17 e faz mean/std explodir. Trata como sem volatilidade.
+    if not np.isfinite(sd) or sd < 1e-9: return 0.0
+    val = excesso.mean() / sd * np.sqrt(252)
+    if not np.isfinite(val): return 0.0
+    return round(float(val), 2)
 
 
 def _max_drawdown(capital_hist: list) -> float:
