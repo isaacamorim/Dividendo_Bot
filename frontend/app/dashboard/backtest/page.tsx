@@ -52,6 +52,8 @@ const WATCHLIST = [
 ];
 const PERIODOS = ["1y", "2y", "5y"];
 
+type Modo = "tecnico" | "fundamental";
+
 const pct = (v: number | null | undefined) =>
   v == null ? "—" : `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
 const corVal = (v: number | null | undefined) =>
@@ -65,16 +67,19 @@ export default function Backtest() {
   const router = useRouter();
   const [ticker, setTicker] = useState("PETR4");
   const [periodo, setPeriodo] = useState("5y");
+  const [modo, setModo] = useState<Modo>("tecnico");
   const [dados, setDados] = useState<BacktestResult | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   const carregar = useCallback(
-    async (tk: string, per: string) => {
+    async (tk: string, per: string, md: Modo) => {
       setCarregando(true);
+      const url =
+        md === "fundamental"
+          ? `${API}/backtest/fundamental/${tk}`
+          : `${API}/backtest/${tk}?periodo=${per}`;
       try {
-        const resp = await fetch(`${API}/backtest/${tk}?periodo=${per}`, {
-          credentials: "include",
-        });
+        const resp = await fetch(url, { credentials: "include" });
         if (resp.status === 401) {
           router.push("/login");
           return;
@@ -90,18 +95,28 @@ export default function Backtest() {
   );
 
   useEffect(() => {
-    carregar(ticker, periodo);
-  }, [ticker, periodo, carregar]);
+    carregar(ticker, periodo, modo);
+  }, [ticker, periodo, modo, carregar]);
+
+  const fund = modo === "fundamental";
 
   const kpis = dados
-    ? [
-        { label: "Retorno", value: pct(dados.retorno_pct), cor: corVal(dados.retorno_pct) },
-        { label: "CAGR", value: pct(dados.cagr_pct), cor: "text-zinc-100" },
-        { label: "Sharpe", value: dados.sharpe?.toFixed(2) ?? "—", cor: "text-zinc-100" },
-        { label: "Max Drawdown", value: pct(dados.max_drawdown), cor: "text-red-400" },
-        { label: "Alpha", value: pct(dados.alpha_pct), cor: corVal(dados.alpha_pct) },
-        { label: "Win Rate", value: dados.win_rate_pct == null ? "—" : `${dados.win_rate_pct}%`, cor: "text-zinc-100" },
-      ]
+    ? fund
+      ? [
+          { label: "Retorno", value: pct(dados.retorno_pct), cor: corVal(dados.retorno_pct) },
+          { label: "CAGR", value: pct(dados.cagr_pct), cor: "text-zinc-100" },
+          { label: "Trades", value: `${dados.n_trades ?? 0}`, cor: "text-zinc-100" },
+          { label: "Win Rate", value: dados.win_rate_pct == null ? "—" : `${dados.win_rate_pct}%`, cor: "text-zinc-100" },
+          { label: "Max Drawdown", value: pct(dados.max_drawdown), cor: "text-red-400" },
+        ]
+      : [
+          { label: "Retorno", value: pct(dados.retorno_pct), cor: corVal(dados.retorno_pct) },
+          { label: "CAGR", value: pct(dados.cagr_pct), cor: "text-zinc-100" },
+          { label: "Sharpe", value: dados.sharpe?.toFixed(2) ?? "—", cor: "text-zinc-100" },
+          { label: "Max Drawdown", value: pct(dados.max_drawdown), cor: "text-red-400" },
+          { label: "Alpha", value: pct(dados.alpha_pct), cor: corVal(dados.alpha_pct) },
+          { label: "Win Rate", value: dados.win_rate_pct == null ? "—" : `${dados.win_rate_pct}%`, cor: "text-zinc-100" },
+        ]
     : [];
 
   const selCls =
@@ -119,6 +134,23 @@ export default function Backtest() {
         </Link>
       </header>
 
+      {/* Toggle de modo */}
+      <div className="mb-4 inline-flex rounded-lg border border-zinc-800 bg-zinc-900 p-1">
+        {([["tecnico", "Técnico (MA50/MA200)"], ["fundamental", "Fundamental"]] as const).map(
+          ([m, label]) => (
+            <button
+              key={m}
+              onClick={() => setModo(m)}
+              className={`rounded-md px-3 py-1.5 text-sm ${
+                modo === m ? "bg-emerald-600 text-white" : "text-zinc-400 hover:text-zinc-100"
+              }`}
+            >
+              {label}
+            </button>
+          ),
+        )}
+      </div>
+
       <div className="mb-6 flex gap-3">
         <div>
           <label className="mb-1 block text-sm text-zinc-400">Ativo</label>
@@ -130,31 +162,43 @@ export default function Backtest() {
             ))}
           </select>
         </div>
-        <div>
-          <label className="mb-1 block text-sm text-zinc-400">Período</label>
-          <select className={selCls} value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
-            {PERIODOS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!fund && (
+          <div>
+            <label className="mb-1 block text-sm text-zinc-400">Período</label>
+            <select className={selCls} value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
+              {PERIODOS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {carregando ? (
         <div className="animate-pulse text-zinc-500">Rodando backtest...</div>
       ) : dados && !dados.erro ? (
         <div className="space-y-6">
+          {fund && dados.nota_dados && (
+            <div className="rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm text-amber-300">
+              {dados.nota_dados}
+            </div>
+          )}
+
           <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <span>{dados.intervalo_datas ?? ""}</span>
-            <span className="rounded bg-zinc-800 px-2 py-0.5">
-              {dados.origem === "cache" ? "⚡ cache" : "🔄 ao vivo"}
-            </span>
+            <span>{fund ? dados.periodo : dados.intervalo_datas ?? ""}</span>
+            {!fund && (
+              <span className="rounded bg-zinc-800 px-2 py-0.5">
+                {dados.origem === "cache" ? "⚡ cache" : "🔄 ao vivo"}
+              </span>
+            )}
           </div>
 
           {/* KPIs */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div
+            className={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${fund ? "lg:grid-cols-5" : "lg:grid-cols-6"}`}
+          >
             {kpis.map((k) => (
               <div key={k.label} className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
                 <div className="text-xs uppercase tracking-wide text-zinc-500">{k.label}</div>
@@ -163,25 +207,32 @@ export default function Backtest() {
             ))}
           </div>
 
-          <BacktestChart historico={dados.historico} historico_bh={dados.historico_bh} />
+          {/* Gráfico só no técnico */}
+          {!fund && (
+            <BacktestChart historico={dados.historico} historico_bh={dados.historico_bh} />
+          )}
 
           {/* Trades */}
           <div className="overflow-x-auto rounded-xl border border-zinc-800">
             <table className="w-full text-sm">
               <thead className="bg-zinc-900 text-zinc-400">
                 <tr>
-                  {["Data", "Tipo", "Preço", "Qtd", "Lucro", "Motivo"].map((h) => (
-                    <th key={h} className="px-3 py-2 text-left">
-                      {h}
-                    </th>
-                  ))}
+                  {["Data", "Tipo", "Preço", "Qtd", "Lucro", fund ? "Motivo saída" : "Motivo"].map(
+                    (h) => (
+                      <th key={h} className="px-3 py-2 text-left">
+                        {h}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {(dados.trades ?? []).length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-3 py-3 text-center text-zinc-500">
-                      Sem trades (ou resultado em cache)
+                      {fund
+                        ? "Nenhum sinal de entrada encontrado no período"
+                        : "Sem trades (ou resultado em cache)"}
                     </td>
                   </tr>
                 ) : (
@@ -212,14 +263,13 @@ export default function Backtest() {
           </div>
 
           <p className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-xs text-zinc-500">
-            A estratégia usa cruzamento MA50/MA200. Alpha = retorno ativo − Buy &amp; Hold no mesmo
-            período. Resultados históricos não garantem retornos futuros.
+            {fund
+              ? "Compra quando score ≥ 7.0. Vende quando score < 5.0 por 3 dias consecutivos, ROE cai >30%, ou dívida explode com qualidade caindo. Testa a tese de dividendos, não swing trade."
+              : "A estratégia usa cruzamento MA50/MA200. Alpha = retorno ativo − Buy & Hold no mesmo período. Resultados históricos não garantem retornos futuros."}
           </p>
         </div>
       ) : (
-        <div className="text-zinc-500">
-          {dados?.erro ?? "Sem dados para este ativo/período."}
-        </div>
+        <div className="text-zinc-500">{dados?.erro ?? "Sem dados para este ativo/período."}</div>
       )}
     </main>
   );

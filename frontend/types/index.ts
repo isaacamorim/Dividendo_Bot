@@ -97,5 +97,6 @@ export interface BacktestResult {
   trades?: Trade[];
   historico?: CapitalPonto[];
   historico_bh?: CapitalPonto[];
+  nota_dados?: string | null;
   erro?: string;
 }
