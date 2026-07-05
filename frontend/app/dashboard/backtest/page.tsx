@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { BacktestResult } from "@/types";
+import { BacktestResult, ComparativoItem, ComparativoResponse } from "@/types";
 import BacktestChart from "@/components/BacktestChart";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
@@ -63,6 +63,13 @@ const ddmm = (d: string) => {
   return `${p[2]}/${p[1]}`;
 };
 
+function veredito(it: ComparativoItem): string {
+  if ((it.n_trades ?? 0) === 0) return "⏸ Sem operações";
+  if ((it.retorno_pct ?? 0) < 0) return "❌ Prejuízo";
+  if ((it.alpha_pct ?? 0) > 0) return "✅ Estratégia venceu B&H";
+  return "📈 Lucro, mas B&H foi melhor";
+}
+
 export default function Backtest() {
   const router = useRouter();
   const [ticker, setTicker] = useState("PETR4");
@@ -70,6 +77,26 @@ export default function Backtest() {
   const [modo, setModo] = useState<Modo>("tecnico");
   const [dados, setDados] = useState<BacktestResult | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [comp, setComp] = useState<ComparativoResponse | null>(null);
+  const [rodandoComp, setRodandoComp] = useState(false);
+
+  async function rodarComparativo() {
+    setRodandoComp(true);
+    try {
+      const resp = await fetch(`${API}/backtest/comparativo?periodo=5y`, {
+        credentials: "include",
+      });
+      if (resp.status === 401) {
+        router.push("/login");
+        return;
+      }
+      setComp(await resp.json());
+    } catch {
+      // silencioso
+    } finally {
+      setRodandoComp(false);
+    }
+  }
 
   const carregar = useCallback(
     async (tk: string, per: string, md: Modo) => {
@@ -207,6 +234,47 @@ export default function Backtest() {
             ))}
           </div>
 
+          {/* Bloco explicativo */}
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-400">
+            <div className="mb-2 font-semibold text-zinc-200">
+              📊 Como interpretar este backtest
+            </div>
+            {fund ? (
+              <div className="space-y-2">
+                <p>
+                  A estratégia compra quando o score fundamentalista ≥ 7.0 (empresa com bons
+                  fundamentos no preço certo) e vende quando:
+                </p>
+                <ul className="ml-4 list-disc space-y-1">
+                  <li>Score cai abaixo de 5.0 por 3 dias consecutivos</li>
+                  <li>ROE cai mais de 30% em relação ao momento da compra</li>
+                </ul>
+                <p>
+                  Esta estratégia testa a tese de dividendos: comprar empresas boas e segurar
+                  enquanto os fundamentos sustentam.
+                </p>
+                <p className="text-amber-300">
+                  ⚠️ Resultado indicativo: o histórico tem poucos dias ainda. O backtest fica mais
+                  confiável com 30+ dias de dados.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p>
+                  A estratégia compra quando MA50 cruza MA200 para cima (tendência de alta
+                  confirmada) e vende no stop -8%, take profit +20%, ou quando MA50 cruza MA200 para
+                  baixo.
+                </p>
+                <p>
+                  Alpha = retorno da estratégia − Buy &amp; Hold no mesmo período. Alpha negativo
+                  significa que teria sido melhor simplesmente comprar e segurar. Para ações de
+                  dividendos, isso é comum — o backtest fundamental testa uma abordagem mais
+                  adequada.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Gráfico só no técnico */}
           {!fund && (
             <BacktestChart historico={dados.historico} historico_bh={dados.historico_bh} />
@@ -232,7 +300,7 @@ export default function Backtest() {
                     <td colSpan={6} className="px-3 py-3 text-center text-zinc-500">
                       {fund
                         ? "Nenhum sinal de entrada encontrado no período"
-                        : "Sem trades (ou resultado em cache)"}
+                        : "Nenhum cruzamento MA50/MA200 encontrado no período. Experimente um período maior ou tente o modo Fundamental."}
                     </td>
                   </tr>
                 ) : (
@@ -271,6 +339,93 @@ export default function Backtest() {
       ) : (
         <div className="text-zinc-500">{dados?.erro ?? "Sem dados para este ativo/período."}</div>
       )}
+
+      {/* Análise consolidada — todos os ativos */}
+      <section className="mt-10 border-t border-zinc-800 pt-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold">📈 Análise consolidada — todos os ativos</h2>
+          <button
+            onClick={rodarComparativo}
+            disabled={rodandoComp}
+            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {rodandoComp ? "⏳ Calculando..." : "Rodar análise completa"}
+          </button>
+        </div>
+
+        {rodandoComp ? (
+          <div className="animate-pulse rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center text-sm text-zinc-400">
+            ⏳ Calculando backtest para todos os ativos... Isso pode levar 2-3 minutos.
+          </div>
+        ) : comp ? (
+          <div className="space-y-6">
+            <div className="overflow-x-auto rounded-xl border border-zinc-800">
+              <table className="w-full text-sm">
+                <thead className="bg-zinc-900 text-zinc-400">
+                  <tr>
+                    {["Ticker", "Setor", "Retorno", "CAGR", "Alpha", "Sharpe", "Win Rate", "Trades", "Veredito"].map(
+                      (h) => (
+                        <th key={h} className="px-3 py-2 text-left">
+                          {h}
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {comp.ranking.map((it) => (
+                    <tr key={it.ticker} className="border-t border-zinc-800">
+                      <td className="px-3 py-2 font-medium">{it.ticker}</td>
+                      <td className="px-3 py-2 text-zinc-400">{it.setor}</td>
+                      <td className={`px-3 py-2 ${corVal(it.retorno_pct)}`}>{pct(it.retorno_pct)}</td>
+                      <td className="px-3 py-2">{pct(it.cagr_pct)}</td>
+                      <td className={`px-3 py-2 ${corVal(it.alpha_pct)}`}>{pct(it.alpha_pct)}</td>
+                      <td className="px-3 py-2">{it.sharpe?.toFixed(2) ?? "—"}</td>
+                      <td className="px-3 py-2">
+                        {it.win_rate_pct == null ? "—" : `${it.win_rate_pct}%`}
+                      </td>
+                      <td className="px-3 py-2">{it.n_trades ?? 0}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">{veredito(it)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Resumo — 3 números grandes */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center">
+                <div className="text-3xl font-bold text-emerald-400">
+                  {comp.pct_com_lucro ?? "—"}%
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">dos ativos com lucro</div>
+              </div>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center">
+                <div className="text-3xl font-bold text-emerald-400">
+                  {comp.pct_venceu_bh ?? "—"}%
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">venceram Buy &amp; Hold</div>
+              </div>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center">
+                <div className={`text-3xl font-bold ${corVal(comp.alpha_medio)}`}>
+                  {pct(comp.alpha_medio)}
+                </div>
+                <div className="mt-1 text-xs text-zinc-500">alpha médio da carteira</div>
+              </div>
+            </div>
+
+            <p className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-xs text-zinc-500">
+              Análise usando estratégia técnica MA50/MA200. Período: 5 anos. Capital inicial:
+              R$10.000 por ativo. Resultados históricos não garantem retornos futuros.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center text-sm text-zinc-500">
+            Clique em “Rodar análise completa” para comparar a estratégia em todos os ativos (pode
+            levar 2-3 minutos).
+          </div>
+        )}
+      </section>
     </main>
   );
 }

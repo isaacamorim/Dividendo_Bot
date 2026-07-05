@@ -100,3 +100,24 @@ export interface BacktestResult {
   nota_dados?: string | null;
   erro?: string;
 }
+
+export interface ComparativoItem {
+  ticker: string;
+  setor: string;
+  retorno_pct: number | null;
+  cagr_pct: number | null;
+  alpha_pct: number | null;
+  sharpe: number | null;
+  win_rate_pct: number | null;
+  n_trades: number | null;
+  origem: string;
+}
+
+export interface ComparativoResponse {
+  periodo: string;
+  n_ativos: number;
+  alpha_medio: number | null;
+  pct_venceu_bh: number | null;
+  pct_com_lucro: number | null;
+  ranking: ComparativoItem[];
+}

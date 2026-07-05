@@ -27,8 +27,9 @@ export default function BacktestChart({
 }) {
   if (!historico || historico.length === 0) {
     return (
-      <div className="flex h-72 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center text-sm text-zinc-500">
-        Gráfico disponível no cálculo ao vivo (resultado em cache traz só os KPIs)
+      <div className="flex h-72 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-center text-sm text-zinc-400">
+        💡 O gráfico aparece na primeira consulta (ao vivo). Clique em outro ativo e volte, ou
+        aguarde o cache expirar (24h) para ver o gráfico novamente.
       </div>
     );
   }

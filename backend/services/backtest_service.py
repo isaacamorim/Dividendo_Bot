@@ -17,7 +17,7 @@ from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 
 from backtest.backtester import rodar_backtest
-from config.settings import WATCHLIST_ACOES
+from config.settings import WATCHLIST_ACOES, resolver_perfil
 
 from backend.models.backtest import BacktestRun
 
@@ -98,16 +98,21 @@ def backtest_comparativo(db, periodo: str = "5y") -> dict:
     alphas = [x["alpha_pct"] for x in resultados if x.get("alpha_pct") is not None]
     alpha_medio = round(sum(alphas) / len(alphas), 2) if alphas else None
     pct_venceu = round(sum(1 for a in alphas if a > 0) / len(alphas) * 100, 1) if alphas else None
+    pct_lucro = round(sum(1 for x in resultados if (x.get("retorno_pct") or 0) > 0)
+                      / len(resultados) * 100, 1)
 
     return {
         "periodo": periodo,
         "n_ativos": len(resultados),
         "alpha_medio": alpha_medio,
         "pct_venceu_bh": pct_venceu,
+        "pct_com_lucro": pct_lucro,
         "ranking": [
-            {"ticker": x["ticker"], "retorno_pct": x.get("retorno_pct"),
-             "cagr_pct": x.get("cagr_pct"), "alpha_pct": x.get("alpha_pct"),
-             "sharpe": x.get("sharpe"), "origem": x.get("origem")}
+            {"ticker": x["ticker"], "setor": resolver_perfil(x["ticker"])[1]["label"],
+             "retorno_pct": x.get("retorno_pct"), "cagr_pct": x.get("cagr_pct"),
+             "alpha_pct": x.get("alpha_pct"), "sharpe": x.get("sharpe"),
+             "win_rate_pct": x.get("win_rate_pct"), "n_trades": x.get("n_trades"),
+             "origem": x.get("origem")}
             for x in ranking
         ],
     }
