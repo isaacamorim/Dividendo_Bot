@@ -25,6 +25,9 @@ class Snapshot(Base):
     estrategia   = Column(String(15))
     setor_perfil = Column(String(30))
     div_estimado = Column(Numeric(8, 2))
+    divida_ebitda = Column(Numeric(6, 2))
+    payout        = Column(Numeric(6, 2))
+    eps_growth    = Column(Numeric(8, 2))
     created_at   = Column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (UniqueConstraint("ticker", "data", name="snapshots_ticker_data_key"),)

@@ -131,8 +131,19 @@ export default function Historico() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-900 text-zinc-400">
                 <tr>
-                  {["Data", "Score", "Sinal", "Preço", "P.Justo", "Upside", "DY", "ROE"].map(
-                    (h) => (
+                  {[
+                    "Data",
+                    "Score",
+                    "Sinal",
+                    "Preço",
+                    "P.Justo",
+                    "Upside",
+                    "DY",
+                    "ROE",
+                    "Dív/EBITDA",
+                    "Payout",
+                    "Cresc.LPA",
+                  ].map((h) => (
                       <th key={h} className="px-3 py-2 text-left">
                         {h}
                       </th>
@@ -159,6 +170,23 @@ export default function Historico() {
                     </td>
                     <td className="px-3 py-2">{num(p.dy, 1)}%</td>
                     <td className="px-3 py-2">{num(p.roe, 1)}%</td>
+                    <td className="px-3 py-2">
+                      {p.divida_ebitda == null ? "—" : `${p.divida_ebitda.toFixed(1)}x`}
+                    </td>
+                    <td className="px-3 py-2">{num(p.payout, 0)}%</td>
+                    <td
+                      className={`px-3 py-2 ${
+                        p.eps_growth == null
+                          ? ""
+                          : p.eps_growth >= 0
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                      }`}
+                    >
+                      {p.eps_growth == null
+                        ? "—"
+                        : `${p.eps_growth > 0 ? "+" : ""}${p.eps_growth.toFixed(0)}%`}
+                    </td>
                   </tr>
                 ))}
               </tbody>

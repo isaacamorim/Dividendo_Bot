@@ -25,6 +25,7 @@ logger = logging.getLogger("dividend_bot.scanner")
 _CAMPOS_UPSERT = (
     "preco", "ma200", "preco_justo", "upside", "dy", "roe", "pl",
     "score", "sinal", "estrategia", "setor_perfil", "div_estimado",
+    "divida_ebitda", "payout", "eps_growth",
 )
 
 
@@ -68,6 +69,8 @@ def _linha_snapshot(r: dict, dia: date) -> dict:
         "pl": f.get("pl"), "score": r.get("score"), "sinal": r.get("sinal"),
         "estrategia": r.get("estrategia"), "setor_perfil": r.get("setor_perfil"),
         "div_estimado": v.get("div_estimado"),
+        "divida_ebitda": f.get("divida_ebitda"), "payout": f.get("payout"),
+        "eps_growth": f.get("eps_growth"),
     }
 
 

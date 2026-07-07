@@ -34,6 +34,8 @@ def _serialize(s: Snapshot) -> dict:
         "dy": _f(s.dy), "roe": _f(s.roe), "pl": _f(s.pl), "score": _f(s.score),
         "sinal": s.sinal, "estrategia": s.estrategia, "setor_perfil": s.setor_perfil,
         "div_estimado": _f(s.div_estimado),
+        "divida_ebitda": _f(s.divida_ebitda), "payout": _f(s.payout),
+        "eps_growth": _f(s.eps_growth),
     }
 
 
@@ -78,6 +80,8 @@ def historico(ticker: str, dias: int = Query(30, ge=1, le=3650),
               .order_by(Snapshot.data).all())
     serie = [{"data": s.data.isoformat(), "score": _f(s.score), "sinal": s.sinal,
               "preco": _f(s.preco), "preco_justo": _f(s.preco_justo),
-              "upside": _f(s.upside), "dy": _f(s.dy), "roe": _f(s.roe)}
+              "upside": _f(s.upside), "dy": _f(s.dy), "roe": _f(s.roe),
+              "divida_ebitda": _f(s.divida_ebitda), "payout": _f(s.payout),
+              "eps_growth": _f(s.eps_growth)}
              for s in rows]
     return {"ticker": tk, "serie": serie}

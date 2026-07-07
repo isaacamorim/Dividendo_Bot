@@ -35,6 +35,9 @@ export interface HistoricoPonto {
   upside: number | null;
   dy: number | null;
   roe: number | null;
+  divida_ebitda: number | null;
+  payout: number | null;
+  eps_growth: number | null;
 }
 
 export interface HistoricoResponse {
