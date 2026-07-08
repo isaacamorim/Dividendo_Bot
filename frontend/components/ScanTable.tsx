@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AtivoResult, Sinal } from "@/types";
+import GptAnaliseModal from "@/components/GptAnaliseModal";
 
 type Col = keyof AtivoResult;
 type Filtro = "TODOS" | Sinal;
@@ -28,6 +29,7 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
   const [filtro, setFiltro] = useState<Filtro>("TODOS");
   const [sortCol, setSortCol] = useState<Col>("score");
   const [asc, setAsc] = useState(false);
+  const [gptTicker, setGptTicker] = useState<string | null>(null);
 
   const linhaCor = (s: string) =>
     s === "BUY" ? "bg-emerald-950/30" : s === "SELL" ? "bg-red-950/30" : "bg-amber-950/20";
@@ -87,6 +89,7 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
                   </th>
                 );
               })}
+              <th className="px-3 py-2 text-left">IA</th>
             </tr>
           </thead>
           <tbody>
@@ -128,11 +131,24 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
                 <td className="px-3 py-2">{num(r.pl, 1)}</td>
                 <td className="px-3 py-2 font-semibold">{num(r.score, 1)}</td>
                 <td className={`px-3 py-2 font-semibold ${sinalCor(r.sinal)}`}>{r.sinal}</td>
+                <td className="px-3 py-2">
+                  <button
+                    onClick={() => setGptTicker(r.ticker)}
+                    title="Análise com IA"
+                    className="rounded-lg bg-zinc-800 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700"
+                  >
+                    🤖 GPT
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {gptTicker && (
+        <GptAnaliseModal ticker={gptTicker} onClose={() => setGptTicker(null)} />
+      )}
     </div>
   );
 }

@@ -47,6 +47,18 @@ def _detalhe(score, dy, upside) -> str:
     return (" — " + ", ".join(partes)) if partes else ""
 
 
+def _resumo_gpt(r: dict) -> str:
+    """Anexa o resumo do GPT ao alerta NOVO_BUY (best-effort — vazio se falhar)."""
+    try:
+        from backend.services.gpt_analyst import analisar_ativo_gpt
+        ana = analisar_ativo_gpt(r)
+        if ana and ana.get("resumo"):
+            return ". " + ana["resumo"]
+    except Exception as e:                          # noqa: BLE001
+        logger.warning("resumo GPT p/ alerta falhou (%s): %s", r.get("ticker"), e)
+    return ""
+
+
 def _sinal_anterior(db, ticker: str, dia: date):
     """Sinal do snapshot mais recente ANTES de 'dia' (o dia anterior de scan)."""
     row = (db.query(Snapshot.sinal)
@@ -68,7 +80,8 @@ def _alertas_sinal(db, resultados, dia):
         dy = (r.get("fundamentos") or {}).get("dy")
         upside = (r.get("valuation") or {}).get("upside")
         if ontem != "BUY" and hoje == "BUY":
-            _inserir(db, tk, "NOVO_BUY", f"{tk} entrou em BUY" + _detalhe(score, dy, upside),
+            _inserir(db, tk, "NOVO_BUY",
+                     f"{tk} entrou em BUY" + _detalhe(score, dy, upside) + _resumo_gpt(r),
                      score, hoje)
         elif ontem == "BUY" and hoje != "BUY":
             _inserir(db, tk, "SAIU_BUY", f"{tk} saiu de BUY (agora {hoje})" + _detalhe(score, dy, upside),

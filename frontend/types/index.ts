@@ -143,3 +143,17 @@ export interface AlertasResponse {
   alertas: Alerta[];
   total_nao_lidos: number;
 }
+
+export interface GptAnalise {
+  resumo: string;
+  pontos_fortes: string[];
+  riscos: string[];
+  recomendacao: string;
+  confianca: "alta" | "media" | "baixa" | string;
+}
+
+export interface GptResponse {
+  disponivel: boolean;
+  ticker?: string;
+  analise?: GptAnalise;
+}
