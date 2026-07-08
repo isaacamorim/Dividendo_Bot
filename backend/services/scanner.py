@@ -45,7 +45,7 @@ def _analisar_ticker(ticker_sa: str):
 
 def rodar_scan(watchlist: list | None = None) -> list:
     """Roda o scan ao vivo da watchlist. Nunca levanta — pula ticker que falhar."""
-    tickers = watchlist or WATCHLIST_ACOES
+    tickers = watchlist or WATCHLIST_COMPLETA
     resultados = []
     for ticker in tickers:
         try:
