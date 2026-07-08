@@ -1,4 +1,4 @@
-from analysis.dividend_analysis import calcular_score
+from analysis.dividend_analysis import calcular_score, _nota_payout_fii
 from config.settings import PERFIS_SETOR, resolver_perfil
 
 
@@ -53,3 +53,10 @@ def test_score_fii_sem_pvp_nao_estoura():
             "pl": None, "divida_ebitda": None, "eps_growth": None, "beta": None}
     s = calcular_score(fund, perfil)
     assert 0 <= s <= 10
+
+
+def test_nota_payout_fii():
+    # FII: payout alto (90-100%) é obrigatório por lei = saúde, não penaliza.
+    assert _nota_payout_fii(95) == 1.0
+    assert _nota_payout_fii(60) == 0.4
+    assert _nota_payout_fii(None) is None

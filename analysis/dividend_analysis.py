@@ -99,6 +99,16 @@ def _norm_pvp_fii(pvp):
     return 0.0
 
 
+def _nota_payout_fii(payout):
+    """Payout de FII em [0,1]. Distribuir 90–100% é obrigatório por lei = saúde,
+    não risco (ao contrário de empresas). Payout baixo é que preocupa."""
+    if payout is None: return None
+    if payout >= 85: return 1.0                   # ótimo — cumpre a lei
+    if payout >= 70: return 0.7                   # aceitável
+    if payout >= 50: return 0.4                   # abaixo do esperado
+    return 0.0                                    # problemático
+
+
 def _nota_momentum(mom):
     """Nota 0–10 pelo momentum de preço (% em 12m, ou 3m como fallback)."""
     if mom >= 15:  return 9.0
@@ -114,10 +124,10 @@ def _score_fii(fund: dict, perfil: dict) -> float:
     aplicam (peso 0). beta e momentum entram só se o dado existir (renormaliza).
     """
     pesos = PESOS_SCORE["FII"]
-    notas = {
-        "dy":     _nota_dy(fund.get("dy"), perfil),
-        "payout": _nota_payout(fund.get("payout")),
-    }
+    notas = {"dy": _nota_dy(fund.get("dy"), perfil)}
+    pay_norm = _nota_payout_fii(fund.get("payout"))   # FII: payout alto = saúde, não risco
+    if pay_norm is not None:
+        notas["payout"] = pay_norm * 10.0     # devolve 0–1; escala p/ 0–10
     pvp_norm = _norm_pvp_fii(fund.get("pvp"))
     if pvp_norm is not None:
         notas["pvp"] = pvp_norm * 10.0        # _norm_pvp_fii devolve 0–1; escala p/ 0–10
