@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import KPICards from "@/components/KPICards";
 import Top5Cards from "@/components/Top5Cards";
 import ScanTable from "@/components/ScanTable";
+import AlertaBadge from "@/components/AlertaBadge";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -67,7 +68,8 @@ export default function Dashboard() {
     <main className="mx-auto max-w-6xl px-4 py-6">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold">📊 Dividend Bot B3 — B3 Scanner</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <AlertaBadge />
           <Link
             href="/dashboard/historico"
             className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"

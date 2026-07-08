@@ -87,4 +87,14 @@ def salvar_snapshots(db, resultados: list, dia: date | None = None) -> int:
     )
     db.execute(stmt)
     db.commit()
+    _gerar_alertas_seguro(db, resultados, dia)
     return len(linhas)
+
+
+def _gerar_alertas_seguro(db, resultados: list, dia: date):
+    """Gera alertas após salvar. Import tardio (evita ciclo) e nunca derruba o scan."""
+    try:
+        from backend.services.alertas_service import gerar_alertas
+        gerar_alertas(db, resultados, dia)
+    except Exception as e:                          # noqa: BLE001 — alerta é best-effort
+        logger.warning("geracao de alertas falhou: %s", e)

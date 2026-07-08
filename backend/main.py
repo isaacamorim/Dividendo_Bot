@@ -5,7 +5,7 @@ Rodar: uvicorn backend.main:app --host 127.0.0.1 --port 8001
 
 from fastapi import FastAPI
 
-from backend.routers import auth, backtest, carteira, scan
+from backend.routers import alertas, auth, backtest, carteira, scan
 
 app = FastAPI(title="Dividend Bot API", version="1.0")
 
@@ -13,6 +13,7 @@ app.include_router(auth.router)
 app.include_router(scan.router)
 app.include_router(carteira.router)
 app.include_router(backtest.router)
+app.include_router(alertas.router)
 
 
 @app.on_event("startup")

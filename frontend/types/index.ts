@@ -125,3 +125,21 @@ export interface ComparativoResponse {
   pct_com_lucro: number | null;
   ranking: ComparativoItem[];
 }
+
+export type AlertaTipo = "NOVO_BUY" | "SAIU_BUY" | "STOP_LOSS" | "TAKE_PROFIT";
+
+export interface Alerta {
+  id: number;
+  ticker: string;
+  tipo: AlertaTipo | string;
+  mensagem: string;
+  score: number | null;
+  sinal: string | null;
+  lido: boolean;
+  created_at: string;
+}
+
+export interface AlertasResponse {
+  alertas: Alerta[];
+  total_nao_lidos: number;
+}
