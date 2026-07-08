@@ -18,6 +18,7 @@ export interface AtivoResult {
   estrategia: string;
   setor_perfil: string;
   div_estimado: number | null;
+  frequencia?: "mensal" | "anual";
 }
 
 export interface ScanLatest {

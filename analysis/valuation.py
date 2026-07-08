@@ -10,7 +10,11 @@ Sanity: método descartado se resultado < 30% ou > 250% do preço atual.
 
 Contrato do dict retornado:
   preco_justo, upside, upside_suficiente, div_estimado, div_mensal,
-  metodos, qualidade
+  frequencia, metodos, qualidade
+
+FIIs (perfil com paga_mensal=True) distribuem mensalmente: div_estimado
+segue anual (base do DY), mas frequencia="mensal" sinaliza ao front que a
+distribuição relevante é a mensal (div_mensal).
 """
 
 from math import sqrt
@@ -33,9 +37,11 @@ def calcular_valuation(fund: dict, perfil: dict) -> dict:
     dy    = fund.get("dy")                      # pontos percentuais
     dy_frac = (dy / 100) if dy is not None else None
 
+    frequencia = "mensal" if perfil.get("paga_mensal") else "anual"
+
     vazio = {"preco_justo": None, "upside": None, "upside_suficiente": False,
-             "div_estimado": None, "div_mensal": None, "metodos": {},
-             "qualidade": _QUALIDADE[0]}
+             "div_estimado": None, "div_mensal": None, "frequencia": frequencia,
+             "metodos": {}, "qualidade": _QUALIDADE[0]}
     if not preco or preco <= 0:
         return vazio
 
@@ -76,6 +82,7 @@ def calcular_valuation(fund: dict, perfil: dict) -> dict:
         "upside_suficiente": (upside is not None and upside >= UPSIDE_MIN_BUY),
         "div_estimado":      div_estimado,
         "div_mensal":        round(div_estimado / 12, 2) if div_estimado else None,
+        "frequencia":        frequencia,
         "metodos":           metodos,
         "qualidade":         _QUALIDADE[len(metodos)],
     }

@@ -17,7 +17,7 @@ const COLS: { key: Col; label: string; sortable?: boolean }[] = [
   { key: "preco_justo", label: "P.Justo" },
   { key: "upside", label: "Upside" },
   { key: "dy", label: "DY" },
-  { key: "div_estimado", label: "Div/ano" },
+  { key: "div_estimado", label: "Div/est" },
   { key: "roe", label: "ROE" },
   { key: "pl", label: "P/L" },
   { key: "score", label: "Score" },
@@ -117,7 +117,13 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
                   {r.upside == null ? "—" : `${r.upside > 0 ? "+" : ""}${r.upside.toFixed(0)}%`}
                 </td>
                 <td className="px-3 py-2">{num(r.dy, 1)}%</td>
-                <td className="px-3 py-2">R${num(r.div_estimado)}</td>
+                <td className="px-3 py-2">
+                  {r.div_estimado == null
+                    ? "—"
+                    : r.frequencia === "mensal"
+                      ? `R$${(r.div_estimado / 12).toFixed(2)}/mês`
+                      : `R$${r.div_estimado.toFixed(2)}/ano`}
+                </td>
                 <td className="px-3 py-2">{num(r.roe, 1)}%</td>
                 <td className="px-3 py-2">{num(r.pl, 1)}</td>
                 <td className="px-3 py-2 font-semibold">{num(r.score, 1)}</td>

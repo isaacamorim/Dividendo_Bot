@@ -33,3 +33,23 @@ def test_score_empresa_ruim_baixo():
             "payout": None, "eps_growth": None, "beta": None}
     s = calcular_score(fund, _perfil("default"))
     assert s < 4
+
+
+def test_score_fii_dy_alto_acima_de_5():
+    # FII com DY >= 8% deve pontuar >= 5 (aceite Frente 4c). ROE/PL/dívida
+    # não entram; score vem de DY, payout e P/VP.
+    _, perfil = resolver_perfil("HGLG11")           # perfil "fii" (estrategia FII)
+    assert perfil["estrategia"] == "FII"
+    fund = {"dy": 8.9, "payout": 83.5, "pvp": 0.94, "roe": None,
+            "pl": None, "divida_ebitda": None, "eps_growth": None, "beta": None}
+    s = calcular_score(fund, perfil)
+    assert s >= 5
+
+
+def test_score_fii_sem_pvp_nao_estoura():
+    # FII de papel não reporta P/VP — score deve renormalizar sem quebrar.
+    _, perfil = resolver_perfil("KNIP11")
+    fund = {"dy": 10.8, "payout": 99.1, "pvp": None, "roe": None,
+            "pl": None, "divida_ebitda": None, "eps_growth": None, "beta": None}
+    s = calcular_score(fund, perfil)
+    assert 0 <= s <= 10

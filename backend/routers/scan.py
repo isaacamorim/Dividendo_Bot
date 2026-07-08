@@ -36,6 +36,7 @@ def _serialize(s: Snapshot) -> dict:
         "div_estimado": _f(s.div_estimado),
         "divida_ebitda": _f(s.divida_ebitda), "payout": _f(s.payout),
         "eps_growth": _f(s.eps_growth),
+        "frequencia": "mensal" if s.setor_perfil == "FII" else "anual",
     }
 
 

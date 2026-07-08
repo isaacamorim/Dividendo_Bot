@@ -14,7 +14,7 @@ from datetime import date
 from sqlalchemy.dialects.postgresql import insert
 
 from analysis.dividend_analysis import analisar_ativo
-from config.settings import WATCHLIST_ACOES
+from config.settings import WATCHLIST_COMPLETA
 from data.fundamentals import get_fundamentos
 from data.market_data import get_dados_tecnicos_completos, get_preco_atual
 

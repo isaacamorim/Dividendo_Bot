@@ -44,6 +44,25 @@ WATCHLIST_ACOES = [
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  Watchlist de FIIs (Fundos Imobiliários — distribuem proventos mensais)
+#  Todos validados no yfinance (preço + histórico + proventos ao vivo).
+# ─────────────────────────────────────────────────────────────────────────────
+
+WATCHLIST_FIIS = [
+    "HGLG11.SA",   # logística
+    "XPML11.SA",   # shoppings
+    "MXRF11.SA",   # papel / híbrido
+    "KNRI11.SA",   # lajes + logística
+    "VISC11.SA",   # shoppings
+    "KNIP11.SA",   # papel (CRI indexado ao IPCA)
+    "BRCO11.SA",   # logística
+    "RBRF11.SA",   # fundo de fundos
+]
+
+# Universo completo do scan (ações + FIIs)
+WATCHLIST_COMPLETA = WATCHLIST_ACOES + WATCHLIST_FIIS
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  Filtros de compra (fundamentos mínimos — frações, ex.: 0.06 = 6%)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -128,8 +147,9 @@ PERFIS_SETOR = {
                     "dy_alvo": 0.050, "dy_cap": 0.12, "divida_max": 3.5,  "estrategia": "DIVIDENDO", "graham": True},
     "infraestrutura": {"label": "Infraestrutura", "pl_min": 12, "pl_max": 20, "pl_mediano": 16,
                     "dy_alvo": 0.040, "dy_cap": 0.11, "divida_max": 4.0,  "estrategia": "DIVIDENDO", "graham": True},
-    "fii":         {"label": "FIIs",              "pl_min": 10, "pl_max": 18, "pl_mediano": 12,
-                    "dy_alvo": 0.090, "dy_cap": 0.16, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": False},
+    "fii":         {"label": "FII",               "pl_min": 10, "pl_max": 18, "pl_mediano": 12,
+                    "dy_alvo": 0.090, "dy_cap": 0.18, "divida_max": None, "estrategia": "FII",
+                    "graham": False, "paga_mensal": True, "pvp_ideal": 1.05},
     "default":     {"label": "Geral",             "pl_min": 8,  "pl_max": 18, "pl_mediano": 12,
                     "dy_alvo": 0.060, "dy_cap": 0.13, "divida_max": 3.0,  "estrategia": "DIVIDENDO", "graham": True},
 }
@@ -181,6 +201,15 @@ TICKER_PERFIL = {
     "CCRO3": "infraestrutura",
     # Shopping Centers
     "MULT3": "shopping",
+    # FIIs (Fundos Imobiliários)
+    "HGLG11": "fii",
+    "XPML11": "fii",
+    "MXRF11": "fii",
+    "KNRI11": "fii",
+    "VISC11": "fii",
+    "KNIP11": "fii",
+    "BRCO11": "fii",
+    "RBRF11": "fii",
 }
 
 # Fallback: setor do Yahoo Finance → perfil (p/ tickers fora do TICKER_PERFIL)
@@ -231,4 +260,7 @@ PESOS_SCORE = {
                   "payout": 0.10, "eps_growth": 0.05, "beta": 0.05},
     "GROWTH":    {"eps_growth": 0.25, "roe": 0.25, "pl": 0.15, "divida": 0.15,
                   "beta": 0.10, "payout": 0.05, "dy": 0.05},
+    # FIIs: sem ROE/P-L/EBITDA relevantes — valor vem de DY, payout e P/VP.
+    "FII":       {"dy": 0.40, "payout": 0.20, "pvp": 0.20,
+                  "beta": 0.10, "momentum": 0.10},
 }

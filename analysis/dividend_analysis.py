@@ -89,11 +89,58 @@ def _nota_beta(beta):
     return 2.0
 
 
+def _norm_pvp_fii(pvp):
+    """Normaliza o P/VP de um FII em [0,1] (1 = barato sobre o valor patrimonial)."""
+    if pvp is None: return None
+    if pvp <= 0.95: return 1.0
+    if pvp <= 1.05: return 0.8
+    if pvp <= 1.15: return 0.5
+    if pvp <= 1.30: return 0.2
+    return 0.0
+
+
+def _nota_momentum(mom):
+    """Nota 0–10 pelo momentum de preço (% em 12m, ou 3m como fallback)."""
+    if mom >= 15:  return 9.0
+    if mom >= 5:   return 7.0
+    if mom >= -5:  return 5.0
+    if mom >= -15: return 3.0
+    return 1.0
+
+
+def _score_fii(fund: dict, perfil: dict) -> float:
+    """
+    Score de FII: dominado por DY, payout e P/VP. ROE, P/L e dívida não se
+    aplicam (peso 0). beta e momentum entram só se o dado existir (renormaliza).
+    """
+    pesos = PESOS_SCORE["FII"]
+    notas = {
+        "dy":     _nota_dy(fund.get("dy"), perfil),
+        "payout": _nota_payout(fund.get("payout")),
+    }
+    pvp_norm = _norm_pvp_fii(fund.get("pvp"))
+    if pvp_norm is not None:
+        notas["pvp"] = pvp_norm * 10.0        # _norm_pvp_fii devolve 0–1; escala p/ 0–10
+    mom = fund.get("momentum_12m")
+    if mom is None:
+        mom = fund.get("momentum_3m")         # FIIs têm ~250 pregões (<252) → usa o 3m
+    if mom is not None:
+        notas["momentum"] = _nota_momentum(mom)
+    if fund.get("beta") is not None:
+        notas["beta"] = _nota_beta(fund["beta"])
+
+    soma_pesos = sum(pesos[f] for f in notas)
+    return round(sum(notas[f] * pesos[f] for f in notas) / soma_pesos, 2)
+
+
 def calcular_score(fund: dict, perfil: dict) -> float:
     """
-    Score 0–10 ponderado pela estratégia do perfil (DIVIDENDO ou GROWTH).
+    Score 0–10 ponderado pela estratégia do perfil (DIVIDENDO, GROWTH ou FII).
     eps_growth e beta ausentes são excluídos com renormalização dos pesos.
     """
+    if perfil["estrategia"] == "FII":
+        return _score_fii(fund, perfil)
+
     pesos = PESOS_SCORE[perfil["estrategia"]]
 
     notas = {
@@ -118,6 +165,31 @@ def calcular_score(fund: dict, perfil: dict) -> float:
 #  2. Sinal fundamentalista
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _avaliar_fii(fund: dict, perfil: dict):
+    """
+    Sinal de FII por DY / P-VP / payout — não usa LPA, ROE nem P/L.
+      BUY  — DY >= 8% E P/VP <= 1.10 E payout >= 85% (FII saudável distribui ~95%)
+      SELL — DY < 5% OU P/VP > 1.40 (yield fraco ou caro demais sobre o VP)
+      HOLD — resto (inclui dados ausentes: conservador)
+    """
+    dy     = fund.get("dy")
+    pvp    = fund.get("pvp")
+    payout = fund.get("payout")
+
+    motivos = []
+    if dy is not None and dy < 5.0:
+        motivos.append(f"DY baixo p/ FII ({dy:.1f}%)")
+    if pvp is not None and pvp > 1.40:
+        motivos.append(f"P/VP esticado ({pvp:.2f})")
+    if motivos:
+        return "SELL", motivos
+
+    if (dy is not None and dy >= 8.0 and pvp is not None and pvp <= 1.10
+            and payout is not None and payout >= 85):
+        return "BUY", []
+    return "HOLD", []
+
+
 def _avaliar_fundamentos(fund: dict, perfil: dict):
     """
     Retorna (sinal, motivos).
@@ -125,8 +197,11 @@ def _avaliar_fundamentos(fund: dict, perfil: dict):
       BUY  — fundamentos aprovados pelos filtros da estratégia
       HOLD — nem deteriorado, nem aprovado
     O sinal BUY aqui é "elegível": o analisar_ativo ainda exige
-    upside suficiente + tendência de alta para confirmar.
+    upside suficiente + tendência de alta para confirmar (exceto FIIs).
     """
+    if perfil["estrategia"] == "FII":
+        return _avaliar_fii(fund, perfil)
+
     dy     = fund.get("dy")
     roe    = fund.get("roe")
     lpa    = fund.get("lpa")
@@ -199,8 +274,10 @@ def analisar_ativo(fund: dict, tec: dict, preco_compra: float = 0) -> dict:
     alertas        = list(motivos)
 
     # ── Confirmação do BUY: upside + tendência ────────────────────────────────
+    # FIIs são avaliados por yield, não por preço-vs-justo (o DDM é circular
+    # quando dy_alvo ≈ dy atual) — o sinal de _avaliar_fii já é final.
     tendencia_alta = tec.get("tendencia_alta")
-    if sinal == "BUY":
+    if sinal == "BUY" and perfil["estrategia"] != "FII":
         if not valuation["upside_suficiente"]:
             sinal = "HOLD"
             if valuation["upside"] is not None:
