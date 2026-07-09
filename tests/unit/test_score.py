@@ -60,3 +60,17 @@ def test_nota_payout_fii():
     assert _nota_payout_fii(95) == 1.0
     assert _nota_payout_fii(60) == 0.4
     assert _nota_payout_fii(None) is None
+
+
+def test_resolver_perfil_respeita_label_da_watchlist():
+    # HSML11 (FII de shopping) não está no TICKER_PERFIL e o yfinance reporta
+    # sector "Financial Services" — sem a watchlist cairia em bancos.
+    nome_sem, _ = resolver_perfil("HSML11", "Financial Services")
+    assert nome_sem == "bancos"
+    # Com o label "FII" escolhido na UI, resolve como FII.
+    nome_com, perfil = resolver_perfil("HSML11", "Financial Services", "FII")
+    assert nome_com == "fii"
+    assert perfil["label"] == "FII"
+    # Transmissoras NÃO são sobrescritas pelo label genérico "Energia".
+    nome_tx, _ = resolver_perfil("TAEE11", None, "Energia")
+    assert nome_tx == "transmissao"

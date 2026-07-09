@@ -228,10 +228,24 @@ SETOR_MAP = {
 }
 
 
-def resolver_perfil(ticker: str, setor_yf: str = None):
+def perfil_por_label(label: str):
+    """(nome, perfil) do primeiro perfil cujo label bate. None se não achar.
+    Labels não são únicos (ex.: 'Energia' = energia e transmissao) — a 1ª
+    ocorrência (a genérica) ganha; casos especiais vêm de TRANSMISSORAS/TICKER_PERFIL."""
+    if not label:
+        return None
+    for nome, p in PERFIS_SETOR.items():
+        if nome != "default" and p["label"] == label:
+            return nome, p
+    return None
+
+
+def resolver_perfil(ticker: str, setor_yf: str = None, label_watchlist: str = None):
     """
     Resolve o perfil setorial de um ativo.
-    Prioridade: transmissoras (detecção automática) > TICKER_PERFIL > SETOR_MAP > default.
+    Prioridade: transmissoras > TICKER_PERFIL > label da watchlist > SETOR_MAP > default.
+    O label da watchlist (escolha manual do usuário na UI) vale mais que o setor do
+    Yahoo, mas menos que os mapas fixos (transmissoras não viram 'energia' à toa).
     Retorna (nome_perfil, dict_perfil).
     """
     t = (ticker or "").upper().replace(".SA", "")
@@ -239,10 +253,14 @@ def resolver_perfil(ticker: str, setor_yf: str = None):
         return "transmissao", PERFIS_SETOR["transmissao"]
     if t in TICKER_PERFIL:
         nome = TICKER_PERFIL[t]
-    elif setor_yf and setor_yf in SETOR_MAP:
-        nome = SETOR_MAP[setor_yf]
     else:
-        nome = "default"
+        por_label = perfil_por_label(label_watchlist)
+        if por_label is not None:
+            nome = por_label[0]
+        elif setor_yf and setor_yf in SETOR_MAP:
+            nome = SETOR_MAP[setor_yf]
+        else:
+            nome = "default"
     # À prova de futuro: setor mapeado sem perfil cai no default em vez de estourar.
     if nome not in PERFIS_SETOR:
         nome = "default"

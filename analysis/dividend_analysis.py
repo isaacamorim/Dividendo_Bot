@@ -266,17 +266,21 @@ def sinal_fundamentalista(fund: dict, perfil: dict) -> str:
 #  3. Análise completa de um ativo
 # ─────────────────────────────────────────────────────────────────────────────
 
-def analisar_ativo(fund: dict, tec: dict, preco_compra: float = 0) -> dict:
+def analisar_ativo(fund: dict, tec: dict, preco_compra: float = 0,
+                   label_watchlist: str = None) -> dict:
     """
     Junta score + sinal + valuation + níveis técnicos num dict único,
     no formato consumido pelo main.py, console_alert e html_report.
+
+    label_watchlist: perfil escolhido pelo usuário na watchlist (UI). Vale mais
+    que o setor do Yahoo na resolução do perfil (ver resolver_perfil).
 
     Sinal BUY final exige as 3 condições (README):
       fundamentos aprovados + upside >= 10% + tendência de alta (MA50 > MA200).
     """
     tec = tec or {}
     ticker = fund.get("ticker", "")
-    nome_perfil, perfil = resolver_perfil(ticker, fund.get("setor"))
+    nome_perfil, perfil = resolver_perfil(ticker, fund.get("setor"), label_watchlist)
 
     score          = calcular_score(fund, perfil)
     sinal, motivos = _avaliar_fundamentos(fund, perfil)

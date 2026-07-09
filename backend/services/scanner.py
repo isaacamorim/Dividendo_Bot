@@ -29,7 +29,7 @@ _CAMPOS_UPSERT = (
 )
 
 
-def _analisar_ticker(ticker_sa: str):
+def _analisar_ticker(ticker_sa: str, label_watchlist: str = None):
     fund = get_fundamentos(ticker_sa)
     tec = get_dados_tecnicos_completos(ticker_sa) or {}
     if not fund.get("preco"):
@@ -40,17 +40,17 @@ def _analisar_ticker(ticker_sa: str):
     fund["ticker"] = ticker_sa.upper().replace(".SA", "")
     if fund.get("delisted"):
         return None
-    return analisar_ativo(fund, tec)
+    return analisar_ativo(fund, tec, label_watchlist=label_watchlist)
 
 
 def _watchlist_do_banco(db) -> list:
-    """Tickers ativos da tabela watchlist (já com .SA). [] se vazia/erro → fallback."""
+    """[(ticker_sa, setor_perfil_label)] dos ativos ativos. [] se vazia/erro → fallback."""
     try:
         from backend.models.watchlist import Watchlist
-        rows = (db.query(Watchlist.ticker)
+        rows = (db.query(Watchlist.ticker, Watchlist.setor_perfil)
                   .filter(Watchlist.ativo.is_(True))
                   .order_by(Watchlist.setor_perfil, Watchlist.ticker).all())
-        return [r[0].upper().replace(".SA", "") + ".SA" for r in rows]
+        return [(r[0].upper().replace(".SA", "") + ".SA", r[1]) for r in rows]
     except Exception as e:                          # noqa: BLE001
         logger.warning("watchlist do banco indisponivel, usando settings: %s", e)
         return []
@@ -58,16 +58,20 @@ def _watchlist_do_banco(db) -> list:
 
 def rodar_scan(db=None, watchlist: list | None = None) -> list:
     """Roda o scan ao vivo. Fonte dos tickers: arg explícito > watchlist do banco
-    > WATCHLIST_COMPLETA (fallback). Nunca levanta — pula ticker que falhar."""
-    tickers = watchlist
-    if tickers is None and db is not None:
-        tickers = _watchlist_do_banco(db)
-    if not tickers:
-        tickers = WATCHLIST_COMPLETA
+    > WATCHLIST_COMPLETA (fallback). Nunca levanta — pula ticker que falhar.
+    Do banco vem o label de perfil escolhido na UI, que orienta o score."""
+    pares = None                                    # [(ticker_sa, label|None)]
+    if watchlist is not None:
+        pares = [(t, None) for t in watchlist]
+    elif db is not None:
+        pares = _watchlist_do_banco(db)
+    if not pares:
+        pares = [(t, None) for t in WATCHLIST_COMPLETA]
+
     resultados = []
-    for ticker in tickers:
+    for ticker, label in pares:
         try:
-            r = _analisar_ticker(ticker)
+            r = _analisar_ticker(ticker, label)
             if r:
                 resultados.append(r)
         except Exception as e:                     # noqa: BLE001 — resiliência por ativo
