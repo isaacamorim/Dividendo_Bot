@@ -17,7 +17,7 @@ def job_scan_diario():
     logger.info("scan diario: iniciando")
     db = SessionLocal()
     try:
-        n = salvar_snapshots(db, rodar_scan())
+        n = salvar_snapshots(db, rodar_scan(db))
         logger.info("scan diario: %d snapshots salvos", n)
     except Exception as e:                          # noqa: BLE001
         logger.exception("scan diario falhou: %s", e)

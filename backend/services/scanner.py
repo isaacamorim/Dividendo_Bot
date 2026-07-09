@@ -43,9 +43,27 @@ def _analisar_ticker(ticker_sa: str):
     return analisar_ativo(fund, tec)
 
 
-def rodar_scan(watchlist: list | None = None) -> list:
-    """Roda o scan ao vivo da watchlist. Nunca levanta — pula ticker que falhar."""
-    tickers = watchlist or WATCHLIST_COMPLETA
+def _watchlist_do_banco(db) -> list:
+    """Tickers ativos da tabela watchlist (já com .SA). [] se vazia/erro → fallback."""
+    try:
+        from backend.models.watchlist import Watchlist
+        rows = (db.query(Watchlist.ticker)
+                  .filter(Watchlist.ativo.is_(True))
+                  .order_by(Watchlist.setor_perfil, Watchlist.ticker).all())
+        return [r[0].upper().replace(".SA", "") + ".SA" for r in rows]
+    except Exception as e:                          # noqa: BLE001
+        logger.warning("watchlist do banco indisponivel, usando settings: %s", e)
+        return []
+
+
+def rodar_scan(db=None, watchlist: list | None = None) -> list:
+    """Roda o scan ao vivo. Fonte dos tickers: arg explícito > watchlist do banco
+    > WATCHLIST_COMPLETA (fallback). Nunca levanta — pula ticker que falhar."""
+    tickers = watchlist
+    if tickers is None and db is not None:
+        tickers = _watchlist_do_banco(db)
+    if not tickers:
+        tickers = WATCHLIST_COMPLETA
     resultados = []
     for ticker in tickers:
         try:

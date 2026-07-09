@@ -157,3 +157,28 @@ export interface GptResponse {
   ticker?: string;
   analise?: GptAnalise;
 }
+
+export interface WatchlistAtivo {
+  ticker: string;
+  nome: string | null;
+  setor: string | null;
+  setor_perfil: string | null;
+  ativo: boolean;
+  adicionado_em: string | null;
+  nota: string | null;
+}
+
+export interface WatchlistResponse {
+  ativos: WatchlistAtivo[];
+  total: number;
+  perfis: string[];
+}
+
+export interface WatchlistValidacao {
+  valido: boolean;
+  ticker: string;
+  nome?: string | null;
+  setor?: string | null;
+  setor_perfil?: string;
+  setor_detectado?: boolean;
+}

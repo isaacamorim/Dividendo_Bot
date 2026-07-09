@@ -57,7 +57,7 @@ def _top5(rows):
 def latest(db: Session = Depends(get_db)):
     hoje = date.today()
     if not db.query(Snapshot).filter(Snapshot.data == hoje).first():
-        salvar_snapshots(db, rodar_scan(), hoje)
+        salvar_snapshots(db, rodar_scan(db), hoje)
     rows = _ultimos_por_ticker(db)
     return {"data": hoje.isoformat(),
             "resultados": [_serialize(s) for s in rows],
@@ -66,7 +66,7 @@ def latest(db: Session = Depends(get_db)):
 
 @router.post("/run")
 def run(db: Session = Depends(get_db)):
-    n = salvar_snapshots(db, rodar_scan(), date.today())
+    n = salvar_snapshots(db, rodar_scan(db), date.today())
     rows = db.query(Snapshot).filter(Snapshot.data == date.today()).all()
     return {"status": "ok", "salvos": n, "resultados": [_serialize(s) for s in rows]}
 
