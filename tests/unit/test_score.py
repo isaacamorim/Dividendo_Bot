@@ -62,6 +62,19 @@ def test_nota_payout_fii():
     assert _nota_payout_fii(None) is None
 
 
+def test_score_fii_payout_furado_ignorado():
+    # yfinance às vezes dá payout absurdo p/ FII (ex.: 3%). Deve ser dropado
+    # (dado furado), não penalizar como empresa ruim.
+    _, perfil = resolver_perfil("HGLG11")
+    base = {"dy": 9.8, "pvp": 0.9, "roe": None, "pl": None,
+            "divida_ebitda": None, "eps_growth": None, "beta": None}
+    furado = calcular_score({**base, "payout": 3}, perfil)      # < 30 → dropa o fator
+    sem = calcular_score({**base, "payout": None}, perfil)      # sem payout
+    saudavel = calcular_score({**base, "payout": 95}, perfil)   # distribui quase tudo
+    assert furado == sem                                        # furado == ausente (dropado)
+    assert saudavel > furado                                    # payout saudável pontua mais
+
+
 def test_resolver_perfil_respeita_label_da_watchlist():
     # HSML11 (FII de shopping) não está no TICKER_PERFIL e o yfinance reporta
     # sector "Financial Services" — sem a watchlist cairia em bancos.

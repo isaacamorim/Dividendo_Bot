@@ -125,7 +125,10 @@ def _score_fii(fund: dict, perfil: dict) -> float:
     """
     pesos = PESOS_SCORE["FII"]
     notas = {"dy": _nota_dy(fund.get("dy"), perfil)}
-    pay_norm = _nota_payout_fii(fund.get("payout"))   # FII: payout alto = saúde, não risco
+    payout = fund.get("payout")
+    # payout < 30% num FII é quase sempre dado furado do yfinance (FII distribui
+    # ~95% por lei) — dropa o fator e renormaliza em vez de penalizar como empresa ruim.
+    pay_norm = None if (payout is not None and payout < 30) else _nota_payout_fii(payout)
     if pay_norm is not None:
         notas["payout"] = pay_norm * 10.0     # devolve 0–1; escala p/ 0–10
     pvp_norm = _norm_pvp_fii(fund.get("pvp"))
