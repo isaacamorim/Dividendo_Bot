@@ -113,6 +113,14 @@ export default function Dashboard() {
               👥 Usuários
             </Link>
           )}
+          <a
+            href="http://191.252.217.250:3002"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+          >
+            🤖 Tradeon ↗
+          </a>
           {podeEditar && (
             <button
               onClick={atualizar}
