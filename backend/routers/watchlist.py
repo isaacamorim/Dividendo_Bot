@@ -19,11 +19,14 @@ from sqlalchemy.orm import Session
 from config.settings import PERFIS_SETOR, resolver_perfil
 
 from backend.db import get_db
-from backend.deps import usuario_atual
+from backend.deps import EDITORES, requer_papel, usuario_atual
 from backend.models.watchlist import Watchlist
 
 router = APIRouter(prefix="/watchlist", tags=["watchlist"],
                    dependencies=[Depends(usuario_atual)])
+
+# Leitor só lê a lista; validar/adicionar/editar/remover exige operador+.
+_editor = Depends(requer_papel(*EDITORES))
 
 # Labels de perfil p/ o dropdown do front (sem o "Geral" default).
 _PERFIS_LABELS = sorted({p["label"] for k, p in PERFIS_SETOR.items() if k != "default"})
@@ -86,7 +89,7 @@ def listar(db: Session = Depends(get_db)):
             "perfis": _PERFIS_LABELS}
 
 
-@router.get("/validar/{ticker}")
+@router.get("/validar/{ticker}", dependencies=[_editor])
 def validar(ticker: str):
     tk = _limpo(ticker)
     if not tk:
@@ -99,7 +102,7 @@ def validar(ticker: str):
             "setor_detectado": info["setor_yf"] is not None}
 
 
-@router.post("")
+@router.post("", dependencies=[_editor])
 def adicionar(body: WatchlistCreate, db: Session = Depends(get_db)):
     tk = _limpo(body.ticker)
     if not tk:
@@ -130,7 +133,7 @@ def adicionar(body: WatchlistCreate, db: Session = Depends(get_db)):
     return _serialize(novo)
 
 
-@router.put("/{ticker}")
+@router.put("/{ticker}", dependencies=[_editor])
 def atualizar(ticker: str, body: WatchlistUpdate, db: Session = Depends(get_db)):
     w = db.query(Watchlist).filter(Watchlist.ticker == _limpo(ticker)).first()
     if not w:
@@ -146,7 +149,7 @@ def atualizar(ticker: str, body: WatchlistUpdate, db: Session = Depends(get_db))
     return _serialize(w)
 
 
-@router.delete("/{ticker}")
+@router.delete("/{ticker}", dependencies=[_editor])
 def remover(ticker: str, db: Session = Depends(get_db)):
     w = db.query(Watchlist).filter(Watchlist.ticker == _limpo(ticker)).first()
     if not w:

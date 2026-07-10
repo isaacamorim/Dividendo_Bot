@@ -15,11 +15,14 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.db import get_db
-from backend.deps import usuario_atual
+from backend.deps import EDITORES, requer_papel, usuario_atual
 from backend.models.snapshot import Snapshot
 from backend.services.scanner import rodar_scan, salvar_snapshots
 
 router = APIRouter(prefix="/scan", tags=["scan"], dependencies=[Depends(usuario_atual)])
+
+# Leitor só visualiza; rodar scan e chamar o GPT (custa API) exige operador+.
+_editor = Depends(requer_papel(*EDITORES))
 
 
 def _f(x):
@@ -64,14 +67,14 @@ def latest(db: Session = Depends(get_db)):
             "top5": _top5(rows)}
 
 
-@router.post("/run")
+@router.post("/run", dependencies=[_editor])
 def run(db: Session = Depends(get_db)):
     n = salvar_snapshots(db, rodar_scan(db), date.today())
     rows = db.query(Snapshot).filter(Snapshot.data == date.today()).all()
     return {"status": "ok", "salvos": n, "resultados": [_serialize(s) for s in rows]}
 
 
-@router.get("/analisar-gpt/{ticker}")
+@router.get("/analisar-gpt/{ticker}", dependencies=[_editor])
 def analisar_gpt(ticker: str, db: Session = Depends(get_db)):
     """Parecer qualitativo do GPT sobre o ativo (snapshot + fundamentos ao vivo)."""
     tk = ticker.upper().replace(".SA", "")

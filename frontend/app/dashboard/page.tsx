@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ScanLatest } from "@/types";
+import { Me, ScanLatest } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 import KPICards from "@/components/KPICards";
 import Top5Cards from "@/components/Top5Cards";
@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [dados, setDados] = useState<ScanLatest | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [escaneando, setEscaneando] = useState(false);
+  const [me, setMe] = useState<Me | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -37,6 +38,16 @@ export default function Dashboard() {
   useEffect(() => {
     carregar();
   }, [carregar]);
+
+  useEffect(() => {
+    fetch(`${API}/auth/me`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setMe(d))
+      .catch(() => {});
+  }, []);
+
+  const podeEditar = me ? me.role !== "leitor" : true;
+  const podeGerirUsuarios = me?.role === "admin" || me?.role === "gestor";
 
   async function atualizar() {
     setEscaneando(true);
@@ -94,13 +105,23 @@ export default function Dashboard() {
           >
             ⚙️ Watchlist
           </Link>
-          <button
-            onClick={atualizar}
-            disabled={escaneando}
-            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {escaneando ? "⏳ Escaneando... (~30s)" : "🔄 Atualizar agora"}
-          </button>
+          {podeGerirUsuarios && (
+            <Link
+              href="/dashboard/usuarios"
+              className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+            >
+              👥 Usuários
+            </Link>
+          )}
+          {podeEditar && (
+            <button
+              onClick={atualizar}
+              disabled={escaneando}
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {escaneando ? "⏳ Escaneando... (~30s)" : "🔄 Atualizar agora"}
+            </button>
+          )}
           <button
             onClick={logout}
             className="rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"

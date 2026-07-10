@@ -182,3 +182,27 @@ export interface WatchlistValidacao {
   setor_perfil?: string;
   setor_detectado?: boolean;
 }
+
+export type Papel = "admin" | "gestor" | "operador" | "leitor";
+
+export interface Me {
+  username: string;
+  role: Papel | string;
+  active: boolean;
+}
+
+export interface UsuarioItem {
+  id: number;
+  username: string;
+  role: string;
+  active: boolean;
+  created_at: string | null;
+  last_login: string | null;
+  created_by: string | null;
+}
+
+export interface UsuariosResponse {
+  ok: boolean;
+  users: UsuarioItem[];
+  assignable: string[];
+}

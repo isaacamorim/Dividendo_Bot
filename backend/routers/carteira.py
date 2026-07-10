@@ -15,12 +15,15 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.db import get_db
-from backend.deps import usuario_atual
+from backend.deps import EDITORES, requer_papel, usuario_atual
 from backend.models.carteira import DividendoRecebido, Posicao
 from backend.schemas.carteira import CarteiraResumo, DividendoCreate, PosicaoCreate
 from backend.services.carteira_service import resumo_carteira
 
 router = APIRouter(prefix="/carteira", tags=["carteira"], dependencies=[Depends(usuario_atual)])
+
+# Leitor só visualiza; editar exige operador+.
+_editor = Depends(requer_papel(*EDITORES))
 
 
 def _limpo(ticker: str) -> str:
@@ -32,7 +35,7 @@ def get_carteira(db: Session = Depends(get_db)):
     return resumo_carteira(db)
 
 
-@router.post("/posicao", status_code=status.HTTP_201_CREATED)
+@router.post("/posicao", status_code=status.HTTP_201_CREATED, dependencies=[_editor])
 def criar_posicao(dados: PosicaoCreate, db: Session = Depends(get_db)):
     p = Posicao(
         ticker=_limpo(dados.ticker), data_compra=dados.data_compra,
@@ -45,7 +48,7 @@ def criar_posicao(dados: PosicaoCreate, db: Session = Depends(get_db)):
             "preco_compra": float(p.preco_compra), "data_compra": p.data_compra.isoformat()}
 
 
-@router.delete("/posicao/{pos_id}")
+@router.delete("/posicao/{pos_id}", dependencies=[_editor])
 def remover_posicao(pos_id: int, db: Session = Depends(get_db)):
     p = db.get(Posicao, pos_id)
     if not p:
@@ -55,7 +58,7 @@ def remover_posicao(pos_id: int, db: Session = Depends(get_db)):
     return {"status": "removida", "id": pos_id}
 
 
-@router.post("/dividendo", status_code=status.HTTP_201_CREATED)
+@router.post("/dividendo", status_code=status.HTTP_201_CREATED, dependencies=[_editor])
 def registrar_dividendo(dados: DividendoCreate, db: Session = Depends(get_db)):
     tk = _limpo(dados.ticker)
     qtd = db.query(func.coalesce(func.sum(Posicao.quantidade), 0)).filter(Posicao.ticker == tk).scalar()
