@@ -147,7 +147,7 @@ export default function Backtest() {
     : [];
 
   const selCls =
-    "rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500";
+    "min-h-[44px] rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500 sm:min-h-0";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -162,13 +162,13 @@ export default function Backtest() {
       </header>
 
       {/* Toggle de modo */}
-      <div className="mb-4 inline-flex rounded-lg border border-zinc-800 bg-zinc-900 p-1">
+      <div className="mb-4 flex w-full rounded-lg border border-zinc-800 bg-zinc-900 p-1 sm:inline-flex sm:w-auto">
         {([["tecnico", "Técnico (MA50/MA200)"], ["fundamental", "Fundamental"]] as const).map(
           ([m, label]) => (
             <button
               key={m}
               onClick={() => setModo(m)}
-              className={`rounded-md px-3 py-1.5 text-sm ${
+              className={`min-h-[44px] flex-1 rounded-md px-3 py-1.5 text-sm sm:min-h-0 sm:flex-none ${
                 modo === m ? "bg-emerald-600 text-white" : "text-zinc-400 hover:text-zinc-100"
               }`}
             >
@@ -347,7 +347,7 @@ export default function Backtest() {
           <button
             onClick={rodarComparativo}
             disabled={rodandoComp}
-            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[44px] rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-0"
           >
             {rodandoComp ? "⏳ Calculando..." : "Rodar análise completa"}
           </button>

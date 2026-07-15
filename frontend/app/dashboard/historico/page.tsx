@@ -108,7 +108,7 @@ export default function Historico() {
         <select
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none focus:border-emerald-500"
+          className="min-h-[44px] rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none focus:border-emerald-500 sm:min-h-0"
         >
           {WATCHLIST.map((t) => (
             <option key={t} value={t}>

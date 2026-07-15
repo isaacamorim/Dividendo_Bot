@@ -184,12 +184,12 @@ export default function WatchlistPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && verificar()}
             placeholder="Código do ativo (ex: PETR4 ou PETR4.SA)"
-            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+            className="min-h-[44px] flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500 sm:min-h-0"
           />
           <button
             onClick={verificar}
             disabled={validando || !input.trim()}
-            className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-white disabled:opacity-50"
+            className="min-h-[44px] rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-white disabled:opacity-50 sm:min-h-0"
           >
             {validando ? "Verificando..." : "Verificar"}
           </button>
@@ -205,7 +205,7 @@ export default function WatchlistPage() {
                 <select
                   value={setorSel}
                   onChange={(e) => setSetorSel(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="min-h-[44px] w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500 sm:min-h-0"
                 >
                   {setorSel && !perfis.includes(setorSel) && (
                     <option value={setorSel}>{setorSel}</option>
@@ -223,14 +223,14 @@ export default function WatchlistPage() {
                   value={nota}
                   onChange={(e) => setNota(e.target.value)}
                   placeholder="Ex: tese de dividendos"
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="min-h-[44px] w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500 sm:min-h-0"
                 />
               </div>
             </div>
             <button
               onClick={adicionar}
               disabled={adicionando}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 sm:min-h-0"
             >
               {adicionando ? "Adicionando..." : "Adicionar à watchlist"}
             </button>
@@ -249,7 +249,7 @@ export default function WatchlistPage() {
               <button
                 key={f}
                 onClick={() => setFiltro(f)}
-                className={`rounded-lg px-3 py-1 text-xs ${
+                className={`min-h-[44px] rounded-lg px-3 py-1 text-xs sm:min-h-0 ${
                   filtro === f ? "bg-zinc-100 text-zinc-900" : "bg-zinc-800 text-zinc-300"
                 }`}
               >

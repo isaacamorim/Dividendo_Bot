@@ -75,7 +75,7 @@ export default function ScanTable({ resultados }: { resultados: AtivoResult[] })
           <button
             key={f}
             onClick={() => setFiltro(f)}
-            className={`rounded-lg px-3 py-1 text-sm ${
+            className={`min-h-[44px] rounded-lg px-3 py-1 text-sm sm:min-h-0 ${
               filtro === f ? "bg-zinc-100 text-zinc-900" : "bg-zinc-800 text-zinc-300"
             }`}
           >

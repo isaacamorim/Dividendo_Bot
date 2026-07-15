@@ -12,7 +12,7 @@ const hoje = () => new Date().toISOString().slice(0, 10);
 const corVal = (v: number) => (v >= 0 ? "text-emerald-400" : "text-red-400");
 
 const inputCls =
-  "w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500";
+  "min-h-[44px] w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm outline-none focus:border-emerald-500 sm:min-h-0";
 
 export default function Carteira() {
   const router = useRouter();
@@ -237,17 +237,17 @@ export default function Carteira() {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
               <h3 className="mb-3 text-sm font-semibold text-zinc-400">Adicionar posição</h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <input className={inputCls} placeholder="Ticker" value={pTicker} onChange={(e) => setPTicker(e.target.value)} />
                 <input className={inputCls} placeholder="Preço" type="number" value={pPreco} onChange={(e) => setPPreco(e.target.value)} />
                 <input className={inputCls} placeholder="Quantidade" type="number" value={pQtd} onChange={(e) => setPQtd(e.target.value)} />
                 <input className={inputCls} type="date" value={pData} onChange={(e) => setPData(e.target.value)} />
-                <input className={`${inputCls} col-span-2`} placeholder="Nota (opcional)" value={pNota} onChange={(e) => setPNota(e.target.value)} />
+                <input className={`${inputCls} sm:col-span-2`} placeholder="Nota (opcional)" value={pNota} onChange={(e) => setPNota(e.target.value)} />
               </div>
               <button
                 onClick={addPosicao}
                 disabled={!pTicker || !pPreco || !pQtd}
-                className="mt-3 w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                className="mt-3 min-h-[44px] w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 sm:min-h-0"
               >
                 Adicionar
               </button>
@@ -255,15 +255,15 @@ export default function Carteira() {
 
             <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
               <h3 className="mb-3 text-sm font-semibold text-zinc-400">Registrar dividendo</h3>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <input className={inputCls} placeholder="Ticker" value={dTicker} onChange={(e) => setDTicker(e.target.value)} />
                 <input className={inputCls} placeholder="Valor/ação" type="number" value={dValor} onChange={(e) => setDValor(e.target.value)} />
-                <input className={`${inputCls} col-span-2`} type="date" value={dData} onChange={(e) => setDData(e.target.value)} />
+                <input className={`${inputCls} sm:col-span-2`} type="date" value={dData} onChange={(e) => setDData(e.target.value)} />
               </div>
               <button
                 onClick={addDividendo}
                 disabled={!dTicker || !dValor}
-                className="mt-3 w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                className="mt-3 min-h-[44px] w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50 sm:min-h-0"
               >
                 Registrar
               </button>
