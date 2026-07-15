@@ -140,8 +140,10 @@ export default function Carteira() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* Tabela de posições */}
-            <div className="lg:col-span-2 overflow-x-auto rounded-xl border border-zinc-800">
+            {/* Posições */}
+            <div className="lg:col-span-2">
+            {/* Tabela — sm+ */}
+            <div className="hidden overflow-x-auto rounded-xl border border-zinc-800 sm:block">
               <table className="w-full text-sm">
                 <thead className="bg-zinc-900 text-zinc-400">
                   <tr>
@@ -181,6 +183,46 @@ export default function Carteira() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Cards — mobile (<sm) */}
+            <div className="space-y-3 sm:hidden">
+              {dados.posicoes.map((p) => (
+                <div
+                  key={p.ticker}
+                  className={`rounded-xl border border-zinc-800 p-4 ${
+                    p.rentabilidade_pct >= 0 ? "bg-emerald-950/20" : "bg-red-950/20"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold">{p.ticker}</span>
+                    <span className={`text-sm font-semibold ${corVal(p.rent_total_pct)}`}>
+                      Ret. {p.rent_total_pct >= 0 ? "+" : ""}
+                      {p.rent_total_pct}%
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-300">
+                    <span>Qtd: {p.qtd}</span>
+                    <span>PM: {brl(p.pm)}</span>
+                    <span>Atual: {brl(p.preco_atual)}</span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-300">
+                    <span>Investido: {brl(p.investido)}</span>
+                    <span>V.Atual: {brl(p.atual)}</span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-300">
+                    <span>
+                      Rent.:{" "}
+                      <span className={`font-semibold ${corVal(p.rentabilidade_pct)}`}>
+                        {p.rentabilidade_pct >= 0 ? "+" : ""}
+                        {p.rentabilidade_pct}%
+                      </span>
+                    </span>
+                    <span>Div: {brl(p.dividendos)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
             </div>
 
             {/* Pizza */}
