@@ -48,7 +48,7 @@ export default function LoginPage() {
 
         <label className="mb-1 block text-sm text-zinc-400">Usuário</label>
         <input
-          className="mb-4 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none focus:border-emerald-500"
+          className="mb-4 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-3 outline-none focus:border-emerald-500"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && entrar()}
@@ -58,7 +58,7 @@ export default function LoginPage() {
         <label className="mb-1 block text-sm text-zinc-400">Senha</label>
         <input
           type="password"
-          className="mb-4 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 outline-none focus:border-emerald-500"
+          className="mb-4 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-3 outline-none focus:border-emerald-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && entrar()}
@@ -73,7 +73,7 @@ export default function LoginPage() {
         <button
           onClick={entrar}
           disabled={carregando || !username || !password}
-          className="w-full rounded-lg bg-emerald-600 px-3 py-2 font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-[48px] w-full rounded-lg bg-emerald-600 px-3 py-3 font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {carregando ? "Entrando..." : "Entrar"}
         </button>
